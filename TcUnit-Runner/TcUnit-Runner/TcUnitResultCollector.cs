@@ -35,7 +35,6 @@ namespace TcUnit.TcUnit_Runner
                     if (line.Contains("Test suites:"))
                     {
                         string noTestSuites = line.Substring(line.LastIndexOf("Test suites:") + 13);
-                        Console.WriteLine("No of test suites: " + noTestSuites);
                         if (!Int32.TryParse(noTestSuites, out numberOfTestSuites))
                         {
                             i = -1;
@@ -44,7 +43,6 @@ namespace TcUnit.TcUnit_Runner
                     if (line.Contains("Tests:"))
                     {
                         string noTests = line.Substring(line.LastIndexOf("Tests:") + 7);
-                        Console.WriteLine("No of tests: " + noTests);
                         if (!Int32.TryParse(noTests, out numberOfTests))
                         {
                             i = -1;
@@ -53,7 +51,6 @@ namespace TcUnit.TcUnit_Runner
                     if (line.Contains("Successful tests:"))
                     {
                         string noSuccessfulTests = line.Substring(line.LastIndexOf("Successful tests:") + 18);
-                        Console.WriteLine("No of successful tests: " + noSuccessfulTests);
                         if (!Int32.TryParse(noSuccessfulTests, out numberOfSuccessfulTests))
                         {
                             i = -1;
@@ -62,7 +59,6 @@ namespace TcUnit.TcUnit_Runner
                     if (line.Contains("Failed tests:"))
                     {
                         string noFailedTests = line.Substring(line.LastIndexOf("Failed tests:") + 14);
-                        Console.WriteLine("No of failed tests: " + noFailedTests);
                         if (!Int32.TryParse(noFailedTests, out numberOfFailedTests))
                         {
                             i = -1;

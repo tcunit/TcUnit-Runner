@@ -137,32 +137,19 @@ namespace TcUnit.TcUnit_Runner
             {
                 /* Clean the solution. This is the only way to clean the error list which needs to be
                  * clean prior to starting the TwinCAT runtime */
-                Console.WriteLine("1");
                 vsInstance.CleanSolution();
 
-                Console.WriteLine("2");
                 log.Info("Setting target NetId to 127.0.0.1.1.1 (localhost)");
                 automationInterface.ITcSysManager.SetTargetNetId("127.0.0.1.1.1");
                 log.Info("Enabling boot project and setting BootProjectAutostart on " + automationInterface.ITcSysManager.GetTargetNetId());
 
-                Console.WriteLine("automationInterface.PlcTreeItem.ChildCount " + automationInterface.PlcTreeItem.ChildCount);
-
                 for (int i = 1; i <= automationInterface.PlcTreeItem.ChildCount; i++)
                 {
-                    Console.WriteLine("3");
                     ITcSmTreeItem plcProject = automationInterface.PlcTreeItem.Child[i];
-                    Console.WriteLine("4");
                     ITcPlcProject iecProject = (ITcPlcProject)plcProject;
-                    Console.WriteLine("5");
-                    //iecProject.GenerateBootProject(true);
-                    Console.WriteLine("6");
                     iecProject.BootProjectAutostart = true;
-                    Console.WriteLine("7");
                 }
-
-                Console.WriteLine("8");
                 automationInterface.ActivateConfiguration();
-                Console.WriteLine("9");
                 automationInterface.StartRestartTwinCAT();
             } else
             {
@@ -171,7 +158,7 @@ namespace TcUnit.TcUnit_Runner
                 return Constants.RETURN_BUILD_ERROR;
             }
 
-            // Run TcUnit until the results have been returned
+            /* Run TcUnit until the results have been returned */
             TcUnitResultCollector tcUnitResultCollector = new TcUnitResultCollector();
             while (true)
             {
@@ -184,6 +171,8 @@ namespace TcUnit.TcUnit_Runner
             Console.WriteLine(tcUnitResultCollector.GetNumberOfTests());
             Console.WriteLine(tcUnitResultCollector.GetNumberOfSuccessfulTests());
             Console.WriteLine(tcUnitResultCollector.GetNumberOfFailedTests());
+
+            Console.WriteLine(XunitXmlCreator.GetXmlString(0, 0, 0, 0));
 
             CleanUp();
             return Constants.RETURN_SUCCESSFULL;

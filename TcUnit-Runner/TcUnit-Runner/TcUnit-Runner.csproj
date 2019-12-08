@@ -71,6 +71,7 @@
     <Compile Include="TcVersion.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="VisualStudioInstance.cs" />
+    <Compile Include="XunitXmlCreator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
