@@ -126,6 +126,10 @@ namespace TcUnit.TcUnit_Runner
             dte = (EnvDTE80.DTE2)System.Activator.CreateInstance(type);
             dte.UserControl = false; // have devenv.exe automatically close when launched using automation
             dte.SuppressUI = true;
+            // Make sure all types of errors in the error list are collected
+            dte.ToolWindows.ErrorList.ShowErrors = true;
+            dte.ToolWindows.ErrorList.ShowMessages = true;
+            dte.ToolWindows.ErrorList.ShowWarnings = true;
 
             // Load the correct version of TwinCAT using the remote manager in the automation interface
             ITcRemoteManager remoteManager = dte.GetObject("TcRemoteManager");

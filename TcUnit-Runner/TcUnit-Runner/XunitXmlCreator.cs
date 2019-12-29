@@ -22,7 +22,6 @@ namespace TcUnit.TcUnit_Runner
         public static string GetXmlString(int numberOfTestSuites, int numberOfTests, int numberOfSuccessfulTests, int numberOfFailedTests)
         {
             XmlDocument xmlDoc = new XmlDocument();
-            //XmlElement rootNode = xmlDoc.DocumentElement;
             XmlElement rootNode = xmlDoc.CreateElement("testsuites");
             xmlDoc.AppendChild(rootNode);
             XmlDeclaration xmlDeclaration = xmlDoc.CreateXmlDeclaration("1.0", "UTF-8", null);
