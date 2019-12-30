@@ -63,10 +63,12 @@
   <ItemGroup>
     <Compile Include="AutomationInterface.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="ErrorList.cs" />
     <Compile Include="MessageFilter.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TcUnitTestResult.cs" />
     <Compile Include="TcUnitResultCollector.cs" />
     <Compile Include="TcVersion.cs" />
     <Compile Include="Utilities.cs" />

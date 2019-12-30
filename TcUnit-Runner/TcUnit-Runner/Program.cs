@@ -109,10 +109,8 @@ namespace TcUnit.TcUnit_Runner
             vsInstance.CleanSolution();
             vsInstance.BuildSolution();
 
-
             ErrorItems errors = vsInstance.GetErrorItems();
 
-            Console.WriteLine("Errors count: " + errors.Count);
             int tcBuildWarnings = 0;
             int tcBuildError = 0;
             for (int i = 1; i <= errors.Count; i++)
@@ -120,13 +118,15 @@ namespace TcUnit.TcUnit_Runner
                 ErrorItem item = errors.Item(i);
                 if ((item.ErrorLevel != vsBuildErrorLevel.vsBuildErrorLevelLow))
                 {
-                    Console.WriteLine("Description: " + item.Description);
-                    Console.WriteLine("ErrorLevel: " + item.ErrorLevel);
-                    Console.WriteLine("Filename: " + item.FileName);
                     if (item.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelMedium)
                         tcBuildWarnings++;
                     else if (item.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelHigh)
+                    {
                         tcBuildError++;
+                        log.Error("Description: " + item.Description);
+                        log.Error("ErrorLevel: " + item.ErrorLevel);
+                        log.Error("Filename: " + item.FileName);
+                    }
                 }
             }
 
@@ -160,23 +160,32 @@ namespace TcUnit.TcUnit_Runner
 
             /* Run TcUnit until the results have been returned */
             TcUnitResultCollector tcUnitResultCollector = new TcUnitResultCollector();
+            ErrorList errorList = new ErrorList();
+
+            log.Info("Waiting for results from TcUnit...");
             while (true)
             {
                 System.Threading.Thread.Sleep(1000);
-                if (tcUnitResultCollector.CollectResults(vsInstance.GetErrorItems()))
+                var newErrors = errorList.AddNew(vsInstance.GetErrorItems());
+                if (tcUnitResultCollector.AreResultsAvailable(newErrors))
+                {
+                    log.Info("All results from TcUnit obtained");
                     break;
+                }
             }
 
-            Console.WriteLine(tcUnitResultCollector.GetNumberOfTestSuites());
-            Console.WriteLine(tcUnitResultCollector.GetNumberOfTests());
-            Console.WriteLine(tcUnitResultCollector.GetNumberOfSuccessfulTests());
-            Console.WriteLine(tcUnitResultCollector.GetNumberOfFailedTests());
+            log.Info("NO. TEST SUITES: " +tcUnitResultCollector.GetNumberOfTestSuites());
+            log.Info("NO. TESTS: " +tcUnitResultCollector.GetNumberOfTests());
+            log.Info("NO. SUCCESSFUL TESTS: " +tcUnitResultCollector.GetNumberOfSuccessfulTests());
+            log.Info("NO. FAILED TESTS: " +tcUnitResultCollector.GetNumberOfFailedTests());
+
+            /* Parse all events (from the error list) from Visual Studio and store the results */
+            tcUnitResultCollector.ParseResults(errorList);
 
             Console.WriteLine(XunitXmlCreator.GetXmlString(0, 0, 0, 0));
 
             CleanUp();
             return Constants.RETURN_SUCCESSFULL;
-
         }
 
         static void DisplayHelp(OptionSet p)
@@ -221,6 +230,5 @@ namespace TcUnit.TcUnit_Runner
             log.Info("Visual Studio solution path: " + VisualStudioSolutionFilePath);
             log.Info("");
         }
-
     }
 }
