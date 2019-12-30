@@ -132,6 +132,7 @@ namespace TcUnit.TcUnit_Runner
             dte.ToolWindows.ErrorList.ShowWarnings = true;
 
             // Load the correct version of TwinCAT using the remote manager in the automation interface
+            log.Info("Using the TwinCAT remote manager to load TwinCAT version " + tcVersion + "...");
             ITcRemoteManager remoteManager = dte.GetObject("TcRemoteManager");
             remoteManager.Version = tcVersion;
 

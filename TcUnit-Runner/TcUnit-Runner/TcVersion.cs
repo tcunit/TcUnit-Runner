@@ -1,4 +1,6 @@
-﻿using System;
+﻿using log4net;
+using log4net.Config;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +10,8 @@ namespace TcUnit.TcUnit_Runner
 {
     class TcVersion
     {
+        private static ILog log = LogManager.GetLogger("TcUnit-Runner");
+
         // Singleton constructor
         private TcVersion()
         { }
@@ -30,6 +34,7 @@ namespace TcUnit.TcUnit_Runner
                     if (pTo > pFrom)
                     {
                         tcVersion = version.Substring(pFrom, pTo - pFrom);
+                        log.Info("In TwinCAT project file, found TwinCAT version " + tcVersion);
                     }
                     break;
                 }

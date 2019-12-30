@@ -170,6 +170,11 @@ namespace TcUnit.TcUnit_Runner
                 if (tcUnitResultCollector.AreResultsAvailable(newErrors))
                 {
                     log.Info("All results from TcUnit obtained");
+                    /* The last test suite result can be returned after that we have received the test results, wait a few seconds
+                     * and fetch again
+                    */
+                    System.Threading.Thread.Sleep(3000);
+                    errorList.AddNew(vsInstance.GetErrorItems());
                     break;
                 }
             }
