@@ -19,18 +19,47 @@ namespace TcUnit.TcUnit_Runner
         private XunitXmlCreator()
         { }
 
-        public static string GetXmlString(int numberOfTestSuites, int numberOfTests, int numberOfSuccessfulTests, int numberOfFailedTests)
+        public static string GetXmlString(TcUnitTestResult testResults)
         {
             XmlDocument xmlDoc = new XmlDocument();
-            XmlElement rootNode = xmlDoc.CreateElement("testsuites");
-            xmlDoc.AppendChild(rootNode);
+            // <Testsuites>
+            XmlElement testSuitesNode = xmlDoc.CreateElement("testsuites");
+            xmlDoc.AppendChild(testSuitesNode);
             XmlDeclaration xmlDeclaration = xmlDoc.CreateXmlDeclaration("1.0", "UTF-8", null);
-            xmlDoc.InsertBefore(xmlDeclaration, rootNode);
+            xmlDoc.InsertBefore(xmlDeclaration, testSuitesNode);
 
-            // Testsuites
-            XmlAttribute attributeDisabled = xmlDoc.CreateAttribute("disabled");
-            attributeDisabled.Value = "";
-            rootNode.Attributes.Append(attributeDisabled);
+            // <Testsuites attributes>
+            XmlAttribute testSuitesAttributeDisabled = xmlDoc.CreateAttribute("disabled");
+            testSuitesAttributeDisabled.Value = "";
+            testSuitesNode.Attributes.Append(testSuitesAttributeDisabled);
+            XmlAttribute testSuitesAttributeFailures = xmlDoc.CreateAttribute("failures");
+            testSuitesAttributeFailures.Value = testResults.GetNumberOfFailedTestCases().ToString();
+            testSuitesNode.Attributes.Append(testSuitesAttributeFailures);
+            XmlAttribute testSuitesAttributeTests = xmlDoc.CreateAttribute("tests");
+            testSuitesAttributeTests.Value = testResults.GetNumberOfTestCases().ToString();
+            testSuitesNode.Attributes.Append(testSuitesAttributeTests);
+
+            foreach (TcUnitTestResult.TestSuiteResult tsResult in testResults)
+            {
+                // <Testsuite>
+                XmlElement testSuiteNode = xmlDoc.CreateElement("testsuite");
+                // <Testsuite attributes>
+                XmlAttribute testSuiteAttributeIdentity = xmlDoc.CreateAttribute("id");
+                testSuiteAttributeIdentity.Value = tsResult.Identity.ToString();
+                testSuiteNode.Attributes.Append(testSuiteAttributeIdentity);
+                XmlAttribute testSuiteAttributeName = xmlDoc.CreateAttribute("name");
+                testSuiteAttributeName.Value = tsResult.Name;
+                testSuiteNode.Attributes.Append(testSuiteAttributeName);
+                XmlAttribute testSuiteAttributeTests = xmlDoc.CreateAttribute("tests");
+                testSuiteAttributeTests.Value = tsResult.NumberOfTests.ToString();
+                testSuiteNode.Attributes.Append(testSuiteAttributeTests);
+                XmlAttribute testSuiteAttributeFailures = xmlDoc.CreateAttribute("failures");
+                testSuiteAttributeFailures.Value = tsResult.NumberOfFailedTests.ToString();
+                testSuiteNode.Attributes.Append(testSuiteAttributeFailures);
+
+                testSuitesNode.AppendChild(testSuiteNode);
+            }
+
 
             return xmlDoc.OuterXml;
         }

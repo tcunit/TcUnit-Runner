@@ -185,9 +185,9 @@ namespace TcUnit.TcUnit_Runner
             log.Info("NO. FAILED TESTS: " +tcUnitResultCollector.GetNumberOfFailedTests());
 
             /* Parse all events (from the error list) from Visual Studio and store the results */
-            tcUnitResultCollector.ParseResults(errorList);
+            TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errorList);
 
-            Console.WriteLine(XunitXmlCreator.GetXmlString(0, 0, 0, 0));
+            Console.WriteLine(XunitXmlCreator.GetXmlString(testResult));
 
             CleanUp();
             return Constants.RETURN_SUCCESSFULL;

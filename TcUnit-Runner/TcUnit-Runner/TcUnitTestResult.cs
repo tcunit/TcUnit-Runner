@@ -113,29 +113,7 @@ namespace TcUnit.TcUnit_Runner
             _numberOfSuccessfulTestCases = numberOfSuccessfulTestCases;
             _numberOfFailedTestCases = numberOfFailedTestCases;
         }
-
-        //public struct TestSuiteResults
-        //{
-            /* General test results */
-            //public uint NumberOfTestSuites;
-            //public uint NumberOfTestCases;
-            //public uint NumberOfSuccessfulTestCases;
-            //public uint NumberOfFailedTestCases;
-
-            /* Test results for each individiual test suite */
-            //public List<TestSuiteResult> TestSuiteResultList;
-
-            //public TestSuiteResults(uint numberOfTestSuites, uint numberOfTestCases, uint numberOfSuccessfulTestCases, uint numberOfFailedTestCases)
-            //{
-              //  NumberOfTestSuites = numberOfTestSuites;
-                //NumberOfTestCases = numberOfTestCases;
-                //NumberOfSuccessfulTestCases = numberOfSuccessfulTestCases;
-                //NumberOfFailedTestCases = numberOfFailedTestCases;
-
-                //TestSuiteResultList = new List<TestSuiteResult>();
-            //}
-        //}
-
+        
         IEnumerator<TestSuiteResult> IEnumerable<TestSuiteResult>.GetEnumerator()
         {
             return _testSuiteResults.GetEnumerator();
@@ -144,6 +122,26 @@ namespace TcUnit.TcUnit_Runner
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _testSuiteResults.GetEnumerator();
+        }
+
+        public uint GetNumberOfTestSuites()
+        {
+            return _numberOfTestSuites;
+        }
+
+        public uint GetNumberOfTestCases()
+        {
+            return _numberOfTestCases;
+        }
+        
+        public uint GetNumberOfSuccessfulTestCases()
+        {
+            return _numberOfSuccessfulTestCases;
+        }
+        
+        public uint GetNumberOfFailedTestCases()
+        {
+            return _numberOfFailedTestCases;
         }
     }
 }
