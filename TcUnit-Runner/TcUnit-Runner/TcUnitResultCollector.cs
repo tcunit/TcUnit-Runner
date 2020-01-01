@@ -27,11 +27,11 @@ namespace TcUnit.TcUnit_Runner
         private int numberOfSuccessfulTests = -1;
         private int numberOfFailedTests = -1;
 
-        
+
 
         public TcUnitResultCollector()
         {
-           
+
         }
 
         /// <summary>
@@ -45,7 +45,8 @@ namespace TcUnit.TcUnit_Runner
             // First check if we already have results
             if (AreTestResultsAvailable())
                 return true;
-            else { 
+            else
+            {
                 foreach (var errorItem in errorList.Where(e => e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelHigh))
                 {
                     line = errorItem.Description;
@@ -71,7 +72,7 @@ namespace TcUnit.TcUnit_Runner
                     }
                 }
                 return AreTestResultsAvailable();
-                }
+            }
         }
 
         /// <summary>
@@ -91,8 +92,8 @@ namespace TcUnit.TcUnit_Runner
             {
                 ErrorLogEntryType expectedErrorLogEntryType = ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING;
 
-                tcUnitTestResult.AddGeneralTestResults((uint) numberOfTestSuites, (uint) numberOfTests,
-                                                       (uint) numberOfSuccessfulTests, (uint) numberOfFailedTests);
+                tcUnitTestResult.AddGeneralTestResults((uint)numberOfTestSuites, (uint)numberOfTests,
+                                                       (uint)numberOfSuccessfulTests, (uint)numberOfFailedTests);
 
                 // Temporary variables
                 uint currentTestIdentity = 0;
@@ -102,8 +103,9 @@ namespace TcUnit.TcUnit_Runner
                 uint testSuiteIdentity = 0;
                 uint testSuiteNumberOfTests = 0;
                 uint testSuiteNumberOfFailedTests = 0;
+                List<string> testSuiteTestNames = new List<string>();
 
-                
+
 
                 /* Find all test suite IDs. There must be one ID for every test suite. The ID starts at 0, so
                  * if we have 5 test suites, we should expect the IDs to be 0, 1, 2, 3, 4 */
@@ -113,14 +115,23 @@ namespace TcUnit.TcUnit_Runner
                     // Look for test suite finished running
                     if (item.Description.Contains("| Test suite") && item.Description.Contains("with ID=" + currentTestIdentity + " finished running"))
                     {
-                        if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING) {
+                        if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING)
+                        {
+                            // Reset stored variables
+                            testSuiteName = "";
+                            testSuiteIdentity = 0;
+                            testSuiteNumberOfTests = 0;
+                            testSuiteNumberOfFailedTests = 0;
+                            testName.Clear();
+
                             // Parse test suite name
                             testSuiteIdentity = currentTestIdentity;
                             testSuiteName = GetStringBetween(item.Description, "Test suite '", "' with ID=" + currentTestIdentity + " finished running");
                             Console.WriteLine("TestSuiteId: " + testSuiteIdentity);
                             Console.WriteLine("TestSuiteName: " + testSuiteName);
                             expectedErrorLogEntryType = ErrorLogEntryType.TEST_SUITE_STATISTICS;
-                        } else
+                        }
+                        else
                         {
                             log.Error("Expected " + ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING.ToString() + " but got " + expectedErrorLogEntryType.ToString());
                             return null;
@@ -134,8 +145,9 @@ namespace TcUnit.TcUnit_Runner
                         if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_SUITE_STATISTICS)
                         {
                             // Parse test suite results (number of tests + number of failed tests)
-                            string numberOfTests = GetStringBetween(item.Description, "ID="+currentTestIdentity +" number of tests=",", number of failed tests=");
-                            if (!uint.TryParse(numberOfTests, out testSuiteNumberOfTests)) {
+                            string numberOfTests = GetStringBetween(item.Description, "ID=" + currentTestIdentity + " number of tests=", ", number of failed tests=");
+                            if (!uint.TryParse(numberOfTests, out testSuiteNumberOfTests))
+                            {
                                 // Handle error
                             }
                             Console.WriteLine("NumberOfTests: " + testSuiteNumberOfTests);
@@ -147,15 +159,26 @@ namespace TcUnit.TcUnit_Runner
                             Console.WriteLine("NumberOfFailedTests: " + testSuiteNumberOfFailedTests);
                             Console.WriteLine("");
 
-                            // Store test suite & go to next test suite
-                            TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult();
-                            tsResult.Name = testSuiteName;
-                            tsResult.Identity = testSuiteIdentity;
-                            tsResult.NumberOfTests = testSuiteNumberOfTests;
-                            tsResult.NumberOfFailedTests = testSuiteNumberOfFailedTests;
-                            tcUnitTestResult.AddNewTestSuiteResult(tsResult);
+                            /* Now two things can happen. Either the testsuite didn't have any tests (testSuiteNumberOfTests=0)
+                               or it had tests. If it didn't have any tests, we store the testsuite result here and go to the
+                               next test suite. If it had tests, we continue */
 
-                            expectedErrorLogEntryType = ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING;
+                            if (testSuiteNumberOfTests.Equals(0))
+                            {
+                                // Store test suite & go to next test suite
+                                TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult();
+                                tsResult.Name = testSuiteName;
+                                tsResult.Identity = testSuiteIdentity;
+                                tsResult.NumberOfTests = testSuiteNumberOfTests;
+                                tsResult.NumberOfFailedTests = testSuiteNumberOfFailedTests;
+                                tcUnitTestResult.AddNewTestSuiteResult(tsResult);
+                                expectedErrorLogEntryType = ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING;
+                            }
+                            else
+                            {
+                                expectedErrorLogEntryType = ErrorLogEntryType.TEST_NAME;
+                            }
+
                             currentTestIdentity++;
                         }
                         else
@@ -163,8 +186,22 @@ namespace TcUnit.TcUnit_Runner
                             log.Error("Expected " + ErrorLogEntryType.TEST_SUITE_STATISTICS.ToString() + " but got " + expectedErrorLogEntryType.ToString());
                             return null;
                         }
+                    }
 
-
+                    // Look for test name
+                    else if (item.Description.Contains("| Test name="))
+                    {
+                        if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_NAME)
+                        {
+                            // Parse test name
+                            string testName = item.Description.Substring(item.Description.LastIndexOf("| Test name=") + 12);
+                            testSuiteTestNames.Add(testName);
+                        }
+                        else
+                        {
+                            log.Error("Expected " + ErrorLogEntryType.TEST_NAME.ToString() + " but got " + expectedErrorLogEntryType.ToString());
+                            return null;
+                        }
                     }
                 }
                 return tcUnitTestResult;
