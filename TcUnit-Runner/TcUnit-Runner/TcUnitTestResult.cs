@@ -20,64 +20,66 @@ namespace TcUnit.TcUnit_Runner
 
         public enum AssertionType
         {
-            Type_UNDEFINED = 0,
-            Type_ANY,
+            UNDEFINED = 0,
+            ANY,
 
             /* Primitive types */
-            Type_BOOL,
-            Type_BYTE,
-            Type_DATE,
-            Type_DATE_AND_TIME,
-            Type_DINT,
-            Type_DWORD,
-            Type_INT,
-            Type_LINT,
-            Type_LREAL,
-            Type_LTIME,
-            Type_LWORD,
-            Type_REAL,
-            Type_SINT,
-            Type_STRING,
-            Type_TIME,
-            Type_TIME_OF_DAY,
-            Type_UDINT,
-            Type_UINT,
-            Type_ULINT,
-            Type_USINT,
-            Type_WORD,
+            BOOL,
+            BYTE,
+            DATE,
+            DATE_AND_TIME,
+            DINT,
+            DWORD,
+            INT,
+            LINT,
+            LREAL,
+            LTIME,
+            LWORD,
+            REAL,
+            SINT,
+            STRING,
+            TIME,
+            TIME_OF_DAY,
+            UDINT,
+            UINT,
+            ULINT,
+            USINT,
+            WORD,
     
             /* Array types */
-            Type_Array2D_LREAL,
-            Type_Array2D_REAL,
-            Type_Array3D_LREAL,
-            Type_Array3D_REAL,
-            Type_Array_BOOL,
-            Type_Array_BYTE,
-            Type_Array_DINT,
-            Type_Array_DWORD,
-            Type_Array_INT,
-            Type_Array_LINT,
-            Type_Array_LREAL,
-            Type_Array_LWORD,
-            Type_Array_REAL,
-            Type_Array_SINT,
-            Type_Array_UDINT,
-            Type_Array_UINT,
-            Type_Array_ULINT,
-            Type_Array_USINT,
-            Type_Array_WORD
+            Array2D_LREAL,
+            Array2D_REAL,
+            Array3D_LREAL,
+            Array3D_REAL,
+            Array_BOOL,
+            Array_BYTE,
+            Array_DINT,
+            Array_DWORD,
+            Array_INT,
+            Array_LINT,
+            Array_LREAL,
+            Array_LWORD,
+            Array_REAL,
+            Array_SINT,
+            Array_UDINT,
+            Array_UINT,
+            Array_ULINT,
+            Array_USINT,
+            Array_WORD
         }
 
         public struct TestCaseResult
         {
             public string TestName;
             public string TestClassName;
+            public string TestStatus;
             public string FailureMessage;
-            public AssertionType AssertType;
-            public TestCaseResult(string testName, string testClassName, string failureMessage, AssertionType assertType)
+            public string AssertType;
+            public TestCaseResult(string testName, string testClassName, string testStatus, string failureMessage, string assertType)
             {
                 TestName = testName;
                 TestClassName = testClassName;
+                TestStatus = testStatus;
                 FailureMessage = failureMessage;
                 AssertType = assertType;
             }

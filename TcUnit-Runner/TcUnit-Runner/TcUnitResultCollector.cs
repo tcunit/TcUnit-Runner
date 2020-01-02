@@ -14,10 +14,11 @@ namespace TcUnit.TcUnit_Runner
 
         private enum ErrorLogEntryType
         {
-            TEST_SUITE_FINISHED_RUNNING = 0, // For example: | Test suite 'PRG_TEST.fbDiagnosticMessageFlagsParser_Test' with ID=1 finished running
+            TEST_SUITE_FINISHED_RUNNING = 0, // For example: | Test suite ID=1 'PRG_TEST.fbDiagnosticMessageFlagsParser_Test'		
             TEST_SUITE_STATISTICS, // For example: | ID=1 number of tests=4, number of failed tests=1		
             TEST_NAME, // For example: | Test name=WhenWarningMessageExpectWarningMessageLocalTimestampAndTwoParameters
             TEST_CLASS_NAME, // For example: | Test class name=PRG_TEST.fbDiagnosticMessageFlagsParser_Test
+            TEST_STATUS, // For example: | Test status=SUCCESS
             TEST_ASSERT_MESSAGE, // For example: | Test assert message=Test 'Warning message' failed at 'diagnosis type'
             TEST_ASSERT_TYPE, // For example: | Test assert type=ANY
         }
@@ -97,23 +98,32 @@ namespace TcUnit.TcUnit_Runner
 
                 // Temporary variables
                 uint currentTestIdentity = 0;
+                uint currentTestCaseInTestSuiteNumber = 0;
 
-                // Storage variables
+                /* Storage variables */
+                // Test suite
                 string testSuiteName = "";
                 uint testSuiteIdentity = 0;
                 uint testSuiteNumberOfTests = 0;
                 uint testSuiteNumberOfFailedTests = 0;
-                List<string> testSuiteTestNames = new List<string>();
 
-
+                // Test case
+                string testSuiteTestCaseName = "";
+                string testSuiteTestCaseClassName = "";
+                string testSuiteTestCaseStatus = "";
+                string testSuiteTestCaseFailureMessage = "";
+                string testSuiteTestCaseAssertType = "";
+                List<TcUnitTestResult.TestCaseResult> testSuiteTestCaseResults = new List<TcUnitTestResult.TestCaseResult>();
 
                 /* Find all test suite IDs. There must be one ID for every test suite. The ID starts at 0, so
                  * if we have 5 test suites, we should expect the IDs to be 0, 1, 2, 3, 4 */
                 foreach (var item in errorList.Where(e => e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelLow))
                 {
 
-                    // Look for test suite finished running
-                    if (item.Description.Contains("| Test suite") && item.Description.Contains("with ID=" + currentTestIdentity + " finished running"))
+                    /* -------------------------------------
+                        Look for test suite finished running
+                       ------------------------------------- */
+                    if (item.Description.Contains("| Test suite ID="+currentTestIdentity +" '"))
                     {
                         if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING)
                         {
@@ -122,42 +132,50 @@ namespace TcUnit.TcUnit_Runner
                             testSuiteIdentity = 0;
                             testSuiteNumberOfTests = 0;
                             testSuiteNumberOfFailedTests = 0;
-                            testName.Clear();
+
+                            testSuiteTestCaseName = "";
+                            testSuiteTestCaseClassName = "";
+                            testSuiteTestCaseStatus = "";
+                            testSuiteTestCaseFailureMessage = "";
+                            testSuiteTestCaseAssertType = "";
+                            testSuiteTestCaseResults.Clear();
 
                             // Parse test suite name
                             testSuiteIdentity = currentTestIdentity;
-                            testSuiteName = GetStringBetween(item.Description, "Test suite '", "' with ID=" + currentTestIdentity + " finished running");
-                            Console.WriteLine("TestSuiteId: " + testSuiteIdentity);
-                            Console.WriteLine("TestSuiteName: " + testSuiteName);
+                            testSuiteName = item.Description.Substring(item.Description.LastIndexOf("| Test suite ID=" +currentTestIdentity +" '") +currentTestIdentity.ToString().Length + 18);
+                            /* If last character is ', remove it
+                             */
+                            if (String.Equals(testSuiteName[testSuiteName.Length - 1].ToString(), "'", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                testSuiteName = testSuiteName.Remove(testSuiteName.Length - 1);
+                            }
                             expectedErrorLogEntryType = ErrorLogEntryType.TEST_SUITE_STATISTICS;
                         }
                         else
                         {
-                            log.Error("Expected " + ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING.ToString() + " but got " + expectedErrorLogEntryType.ToString());
+                            log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING.ToString());
                             return null;
                         }
                     }
-
-                    // Look for test suite statistics
+                    /* -------------------------------------
+                       Look for test suite statistics
+                       ------------------------------------- */
                     else if (item.Description.Contains("| ID=" + currentTestIdentity + " number of tests=") &&
                              item.Description.Contains(", number of failed tests="))
                     {
                         if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_SUITE_STATISTICS)
                         {
                             // Parse test suite results (number of tests + number of failed tests)
-                            string numberOfTests = GetStringBetween(item.Description, "ID=" + currentTestIdentity + " number of tests=", ", number of failed tests=");
-                            if (!uint.TryParse(numberOfTests, out testSuiteNumberOfTests))
+                            string numberOfTestsString = GetStringBetween(item.Description, "ID=" + currentTestIdentity + " number of tests=", ", number of failed tests=");
+                            if (!uint.TryParse(numberOfTestsString, out testSuiteNumberOfTests))
                             {
                                 // Handle error
                             }
-                            Console.WriteLine("NumberOfTests: " + testSuiteNumberOfTests);
-                            string numberOfFailedTests = item.Description.Substring(item.Description.LastIndexOf(", number of failed tests=") + 25);
-                            if (!uint.TryParse(numberOfFailedTests, out testSuiteNumberOfFailedTests))
+                            string numberOfFailedTestsString = item.Description.Substring(item.Description.LastIndexOf(", number of failed tests=") + 25);
+                            if (!uint.TryParse(numberOfFailedTestsString, out testSuiteNumberOfFailedTests))
                             {
                                 // Handle error
                             }
-                            Console.WriteLine("NumberOfFailedTests: " + testSuiteNumberOfFailedTests);
-                            Console.WriteLine("");
 
                             /* Now two things can happen. Either the testsuite didn't have any tests (testSuiteNumberOfTests=0)
                                or it had tests. If it didn't have any tests, we store the testsuite result here and go to the
@@ -177,33 +195,184 @@ namespace TcUnit.TcUnit_Runner
                             else
                             {
                                 expectedErrorLogEntryType = ErrorLogEntryType.TEST_NAME;
+                                currentTestCaseInTestSuiteNumber = 1;
                             }
 
                             currentTestIdentity++;
                         }
                         else
                         {
-                            log.Error("Expected " + ErrorLogEntryType.TEST_SUITE_STATISTICS.ToString() + " but got " + expectedErrorLogEntryType.ToString());
+                            log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_SUITE_STATISTICS.ToString());
                             return null;
                         }
                     }
 
-                    // Look for test name
+                    /* -------------------------------------
+                       Look for test name
+                       ------------------------------------- */
                     else if (item.Description.Contains("| Test name="))
                     {
-                        if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_NAME)
+                        if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_NAME && currentTestCaseInTestSuiteNumber <= testSuiteNumberOfTests)
                         {
                             // Parse test name
                             string testName = item.Description.Substring(item.Description.LastIndexOf("| Test name=") + 12);
-                            testSuiteTestNames.Add(testName);
+                            testSuiteTestCaseName = testName;
+                            currentTestCaseInTestSuiteNumber++;
+                            expectedErrorLogEntryType = ErrorLogEntryType.TEST_CLASS_NAME;
                         }
                         else
                         {
-                            log.Error("Expected " + ErrorLogEntryType.TEST_NAME.ToString() + " but got " + expectedErrorLogEntryType.ToString());
+                            if (expectedErrorLogEntryType != ErrorLogEntryType.TEST_NAME)
+                                log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_NAME.ToString());
+                            else
+                                log.Error("ERROR: While parsing TcUnit results, got test case number " + currentTestCaseInTestSuiteNumber + " but expected amount is " + testSuiteNumberOfTests);
+                            return null;
+                        }
+                    }
+
+                    /* -------------------------------------
+                       Look for test class name
+                       ------------------------------------- */
+                    else if (item.Description.Contains("| Test class name="))
+                    {
+                        if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_CLASS_NAME)
+                        {
+                            // Parse test class name
+                            string testClassName = item.Description.Substring(item.Description.LastIndexOf("| Test class name=") + 18);
+                            testSuiteTestCaseClassName = testClassName;
+                            expectedErrorLogEntryType = ErrorLogEntryType.TEST_STATUS;
+                        }
+                        else
+                        {
+                            log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_CLASS_NAME.ToString());
+                            return null;
+                        }
+                    }
+
+                    /* -------------------------------------
+                       Look for test status
+                       ------------------------------------- */
+                    else if (item.Description.Contains("| Test status="))
+                    {
+                        if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_STATUS)
+                        {
+                            // Parse test status
+                            string testStatus = item.Description.Substring(item.Description.LastIndexOf("| Test status=") + 14);
+                            testSuiteTestCaseStatus = testStatus;
+                            /* Now two things can happen. Either the test result/status is FAIL, in which case we want to read the
+                               assertion information. If the test result/status is not FAIL, we either continue to the next test case
+                               or the next test suite */
+                            if (testStatus.Equals("FAIL"))
+                                expectedErrorLogEntryType = ErrorLogEntryType.TEST_ASSERT_MESSAGE;
+                            else {
+                                // Store test case
+                                TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult();
+                                tcResult.TestName = testSuiteTestCaseName;
+                                tcResult.TestClassName = testSuiteTestCaseClassName;
+                                tcResult.TestStatus = testSuiteTestCaseStatus;
+
+                                // Add test case result to test cases results
+                                testSuiteTestCaseResults.Add(tcResult);
+
+                                if (currentTestCaseInTestSuiteNumber <= testSuiteNumberOfTests) { // More tests in this test suite
+                                    expectedErrorLogEntryType = ErrorLogEntryType.TEST_NAME; // Goto next test case
+                                }
+                                else { // Last test case in this test suite
+                                    // Create test suite result
+                                    TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult();
+                                    tsResult.Name = testSuiteName;
+                                    tsResult.Identity = testSuiteIdentity;
+                                    tsResult.NumberOfTests = testSuiteNumberOfTests;
+                                    tsResult.NumberOfFailedTests = testSuiteNumberOfFailedTests;
+
+                                    // Add test case results to test suite
+                                    tsResult.TestCaseResults = testSuiteTestCaseResults;
+
+                                    // Add test suite to final test results
+                                    tcUnitTestResult.AddNewTestSuiteResult(tsResult);
+                                    expectedErrorLogEntryType = ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING;
+                                }
+                            }
+                            
+                        }
+                        else
+                        {
+                            log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_STATUS.ToString());
+                            return null;
+                        }
+                    }
+
+                    /* -------------------------------------
+                      Look for test assert message
+                      ------------------------------------- */
+                    else if (item.Description.Contains("| Test assert message="))
+                    {
+                        if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_ASSERT_MESSAGE)
+                        {
+                            // Parse test assert message
+                            string testAssertMessage = item.Description.Substring(item.Description.LastIndexOf("| Test assert message=") + 22);
+                            testSuiteTestCaseFailureMessage = testAssertMessage;
+
+                            expectedErrorLogEntryType = ErrorLogEntryType.TEST_ASSERT_TYPE;
+                        }
+                        else
+                        {
+                            log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_ASSERT_MESSAGE.ToString());
+                            return null;
+                        }
+                    }
+
+                    /* -------------------------------------
+                      Look for test assert type
+                      ------------------------------------- */
+                    else if (item.Description.Contains("| Test assert type="))
+                    {
+                        if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_ASSERT_TYPE)
+                        {
+                            // Parse test assert type
+                            string testAssertType = item.Description.Substring(item.Description.LastIndexOf("| Test assert type=") + 20);
+                            testSuiteTestCaseAssertType = testAssertType;
+
+                            // Store test case
+                            TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult();
+                            tcResult.TestName = testSuiteTestCaseName;
+                            tcResult.TestClassName = testSuiteTestCaseClassName;
+                            tcResult.TestStatus = testSuiteTestCaseStatus;
+                            tcResult.FailureMessage = testSuiteTestCaseFailureMessage;
+                            tcResult.AssertType = testSuiteTestCaseAssertType;
+
+                            // Add test case result to test cases results
+                            testSuiteTestCaseResults.Add(tcResult);
+
+                            if (currentTestCaseInTestSuiteNumber <= testSuiteNumberOfTests)
+                            { // More tests in this test suite
+                                expectedErrorLogEntryType = ErrorLogEntryType.TEST_NAME; // Goto next test case
+                            }
+                            else
+                            { // Last test case in this test suite
+                                // Create test suite result
+                                TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult();
+                                tsResult.Name = testSuiteName;
+                                tsResult.Identity = testSuiteIdentity;
+                                tsResult.NumberOfTests = testSuiteNumberOfTests;
+                                tsResult.NumberOfFailedTests = testSuiteNumberOfFailedTests;
+
+                                // Add test case results to test suite
+                                tsResult.TestCaseResults = testSuiteTestCaseResults;
+
+                                // Add test suite to final test results
+                                tcUnitTestResult.AddNewTestSuiteResult(tsResult);
+                                expectedErrorLogEntryType = ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING;
+                            }
+                        }
+                        else
+                        {
+                            log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_ASSERT_TYPE.ToString());
                             return null;
                         }
                     }
                 }
+                log.Info("Done collecting TC results");
                 return tcUnitTestResult;
             }
         }

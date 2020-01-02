@@ -187,7 +187,8 @@ namespace TcUnit.TcUnit_Runner
             /* Parse all events (from the error list) from Visual Studio and store the results */
             TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errorList);
 
-            Console.WriteLine(XunitXmlCreator.GetXmlString(testResult));
+            if (testResult != null)
+                Console.WriteLine(XunitXmlCreator.GetXmlString(testResult));
 
             CleanUp();
             return Constants.RETURN_SUCCESSFULL;

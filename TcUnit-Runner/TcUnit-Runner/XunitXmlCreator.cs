@@ -57,6 +57,10 @@ namespace TcUnit.TcUnit_Runner
                 testSuiteAttributeFailures.Value = tsResult.NumberOfFailedTests.ToString();
                 testSuiteNode.Attributes.Append(testSuiteAttributeFailures);
 
+                // <testcase>
+
+
+                // Append <testsuite> to <testsuites>
                 testSuitesNode.AppendChild(testSuiteNode);
             }
 
