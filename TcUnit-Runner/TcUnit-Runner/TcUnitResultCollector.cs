@@ -184,11 +184,7 @@ namespace TcUnit.TcUnit_Runner
                             if (testSuiteNumberOfTests.Equals(0))
                             {
                                 // Store test suite & go to next test suite
-                                TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult();
-                                tsResult.Name = testSuiteName;
-                                tsResult.Identity = testSuiteIdentity;
-                                tsResult.NumberOfTests = testSuiteNumberOfTests;
-                                tsResult.NumberOfFailedTests = testSuiteNumberOfFailedTests;
+                                TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult(testSuiteName, testSuiteIdentity, testSuiteNumberOfTests, testSuiteNumberOfFailedTests);
                                 tcUnitTestResult.AddNewTestSuiteResult(tsResult);
                                 expectedErrorLogEntryType = ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING;
                             }
@@ -266,10 +262,7 @@ namespace TcUnit.TcUnit_Runner
                                 expectedErrorLogEntryType = ErrorLogEntryType.TEST_ASSERT_MESSAGE;
                             else {
                                 // Store test case
-                                TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult();
-                                tcResult.TestName = testSuiteTestCaseName;
-                                tcResult.TestClassName = testSuiteTestCaseClassName;
-                                tcResult.TestStatus = testSuiteTestCaseStatus;
+                                TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult(testSuiteTestCaseName, testSuiteTestCaseClassName, testSuiteTestCaseStatus, "", "");
 
                                 // Add test case result to test cases results
                                 testSuiteTestCaseResults.Add(tcResult);
@@ -279,15 +272,13 @@ namespace TcUnit.TcUnit_Runner
                                 }
                                 else { // Last test case in this test suite
                                     // Create test suite result
-                                    TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult();
-                                    tsResult.Name = testSuiteName;
-                                    tsResult.Identity = testSuiteIdentity;
-                                    tsResult.NumberOfTests = testSuiteNumberOfTests;
-                                    tsResult.NumberOfFailedTests = testSuiteNumberOfFailedTests;
-
+                                    TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult(testSuiteName, testSuiteIdentity, testSuiteNumberOfTests, testSuiteNumberOfFailedTests);
+                                    
                                     // Add test case results to test suite
-                                    tsResult.TestCaseResults = testSuiteTestCaseResults;
-
+                                    foreach (TcUnitTestResult.TestCaseResult tcResultToBeStored in testSuiteTestCaseResults) {
+                                        tsResult.TestCaseResults.Add(tcResultToBeStored);
+                                    }
+                                    
                                     // Add test suite to final test results
                                     tcUnitTestResult.AddNewTestSuiteResult(tsResult);
                                     expectedErrorLogEntryType = ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING;
@@ -330,17 +321,12 @@ namespace TcUnit.TcUnit_Runner
                         if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_ASSERT_TYPE)
                         {
                             // Parse test assert type
-                            string testAssertType = item.Description.Substring(item.Description.LastIndexOf("| Test assert type=") + 20);
+                            string testAssertType = item.Description.Substring(item.Description.LastIndexOf("| Test assert type=") + 19);
                             testSuiteTestCaseAssertType = testAssertType;
 
                             // Store test case
-                            TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult();
-                            tcResult.TestName = testSuiteTestCaseName;
-                            tcResult.TestClassName = testSuiteTestCaseClassName;
-                            tcResult.TestStatus = testSuiteTestCaseStatus;
-                            tcResult.FailureMessage = testSuiteTestCaseFailureMessage;
-                            tcResult.AssertType = testSuiteTestCaseAssertType;
-
+                            TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult(testSuiteTestCaseName, testSuiteTestCaseClassName, testSuiteTestCaseStatus, testSuiteTestCaseFailureMessage, testSuiteTestCaseAssertType);
+                            
                             // Add test case result to test cases results
                             testSuiteTestCaseResults.Add(tcResult);
 
@@ -351,14 +337,13 @@ namespace TcUnit.TcUnit_Runner
                             else
                             { // Last test case in this test suite
                                 // Create test suite result
-                                TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult();
-                                tsResult.Name = testSuiteName;
-                                tsResult.Identity = testSuiteIdentity;
-                                tsResult.NumberOfTests = testSuiteNumberOfTests;
-                                tsResult.NumberOfFailedTests = testSuiteNumberOfFailedTests;
+                                TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult(testSuiteName, testSuiteIdentity, testSuiteNumberOfTests, testSuiteNumberOfFailedTests);
 
                                 // Add test case results to test suite
-                                tsResult.TestCaseResults = testSuiteTestCaseResults;
+                                foreach (TcUnitTestResult.TestCaseResult tcResultToBeStored in testSuiteTestCaseResults)
+                                {
+                                    tsResult.TestCaseResults.Add(tcResultToBeStored);
+                                }
 
                                 // Add test suite to final test results
                                 tcUnitTestResult.AddNewTestSuiteResult(tsResult);

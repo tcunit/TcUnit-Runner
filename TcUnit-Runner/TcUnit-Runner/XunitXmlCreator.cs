@@ -22,16 +22,13 @@ namespace TcUnit.TcUnit_Runner
         public static string GetXmlString(TcUnitTestResult testResults)
         {
             XmlDocument xmlDoc = new XmlDocument();
-            // <Testsuites>
+            // <testsuites>
             XmlElement testSuitesNode = xmlDoc.CreateElement("testsuites");
             xmlDoc.AppendChild(testSuitesNode);
             XmlDeclaration xmlDeclaration = xmlDoc.CreateXmlDeclaration("1.0", "UTF-8", null);
             xmlDoc.InsertBefore(xmlDeclaration, testSuitesNode);
 
-            // <Testsuites attributes>
-            XmlAttribute testSuitesAttributeDisabled = xmlDoc.CreateAttribute("disabled");
-            testSuitesAttributeDisabled.Value = "";
-            testSuitesNode.Attributes.Append(testSuitesAttributeDisabled);
+            // <testsuites> attributes
             XmlAttribute testSuitesAttributeFailures = xmlDoc.CreateAttribute("failures");
             testSuitesAttributeFailures.Value = testResults.GetNumberOfFailedTestCases().ToString();
             testSuitesNode.Attributes.Append(testSuitesAttributeFailures);
@@ -41,9 +38,9 @@ namespace TcUnit.TcUnit_Runner
 
             foreach (TcUnitTestResult.TestSuiteResult tsResult in testResults)
             {
-                // <Testsuite>
+                // <testsuite>
                 XmlElement testSuiteNode = xmlDoc.CreateElement("testsuite");
-                // <Testsuite attributes>
+                // <testsuite> attributes
                 XmlAttribute testSuiteAttributeIdentity = xmlDoc.CreateAttribute("id");
                 testSuiteAttributeIdentity.Value = tsResult.Identity.ToString();
                 testSuiteNode.Attributes.Append(testSuiteAttributeIdentity);
@@ -58,7 +55,47 @@ namespace TcUnit.TcUnit_Runner
                 testSuiteNode.Attributes.Append(testSuiteAttributeFailures);
 
                 // <testcase>
+                foreach (TcUnitTestResult.TestCaseResult tcResult in tsResult.TestCaseResults)
+                {
+                    XmlElement testCaseNode = xmlDoc.CreateElement("testcase");
 
+                    // <testcase> attributes
+                    XmlAttribute testCaseAttributeName = xmlDoc.CreateAttribute("name");
+                    testCaseAttributeName.Value = tcResult.TestName;
+                    testCaseNode.Attributes.Append(testCaseAttributeName);
+                    XmlAttribute testCaseAttributeTestClassName = xmlDoc.CreateAttribute("classname");
+                    testCaseAttributeTestClassName.Value = tcResult.TestClassName;
+                    testCaseNode.Attributes.Append(testCaseAttributeTestClassName);
+                    XmlAttribute testCaseAttributeStatus = xmlDoc.CreateAttribute("status");
+                    testCaseAttributeStatus.Value = tcResult.TestStatus;
+                    testCaseNode.Attributes.Append(testCaseAttributeStatus);
+
+                    
+                    if (tcResult.TestStatus.Equals("SKIP")) {
+                        // <skipped>
+                        XmlElement testCaseSkippedNode = xmlDoc.CreateElement("skipped");
+
+                        // Append <skipped> to <testcase>
+                        testCaseNode.AppendChild(testCaseSkippedNode);
+                    } else if (tcResult.TestStatus.Equals("FAIL")) {
+                        // <failure>
+                        XmlElement failureNode = xmlDoc.CreateElement("failure");
+
+                        // <failure> attributes
+                        XmlAttribute failureAttributeMessage = xmlDoc.CreateAttribute("message");
+                        failureAttributeMessage.Value = tcResult.FailureMessage;
+                        failureNode.Attributes.Append(failureAttributeMessage);
+                        XmlAttribute failureAttributeType = xmlDoc.CreateAttribute("type");
+                        failureAttributeType.Value = tcResult.AssertType;
+                        failureNode.Attributes.Append(failureAttributeType);
+
+                        // Append <failure> to <testcase>
+                        testCaseNode.AppendChild(failureNode);
+                    }
+
+                    // Append <testcase> to <testesuite>
+                    testSuiteNode.AppendChild(testCaseNode);
+                }
 
                 // Append <testsuite> to <testsuites>
                 testSuitesNode.AppendChild(testSuiteNode);

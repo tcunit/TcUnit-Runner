@@ -166,7 +166,11 @@ namespace TcUnit.TcUnit_Runner
             while (true)
             {
                 System.Threading.Thread.Sleep(1000);
-                var newErrors = errorList.AddNew(vsInstance.GetErrorItems());
+
+                ErrorItems errorItems = vsInstance.GetErrorItems();
+                log.Info("... got " + errorItems.Count + " report lines so far.");
+
+                var newErrors = errorList.AddNew(errorItems);
                 if (tcUnitResultCollector.AreResultsAvailable(newErrors))
                 {
                     log.Info("All results from TcUnit obtained");
