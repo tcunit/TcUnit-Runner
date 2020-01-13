@@ -183,16 +183,18 @@ namespace TcUnit.TcUnit_Runner
                 }
             }
 
-            log.Info("NO. TEST SUITES: " +tcUnitResultCollector.GetNumberOfTestSuites());
-            log.Info("NO. TESTS: " +tcUnitResultCollector.GetNumberOfTests());
-            log.Info("NO. SUCCESSFUL TESTS: " +tcUnitResultCollector.GetNumberOfSuccessfulTests());
-            log.Info("NO. FAILED TESTS: " +tcUnitResultCollector.GetNumberOfFailedTests());
-
             /* Parse all events (from the error list) from Visual Studio and store the results */
             TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errorList);
 
-            if (testResult != null)
-                Console.WriteLine(XunitXmlCreator.GetXmlString(testResult));
+            /* Write xUnit XML report */
+            if (testResult != null) {
+                // No need to check if file (VisualStudioSolutionFilePath) exists, as this has already been done
+                string VisualStudioSolutionDirectoryPath = Path.GetDirectoryName(VisualStudioSolutionFilePath);
+                string XUnitReportFilePath = VisualStudioSolutionDirectoryPath +"\\" + Constants.XUNIT_RESULT_FILE_NAME;
+                log.Info("Writing xUnit XML file to " + XUnitReportFilePath);
+                // Overwrites all existing content (if existing)
+                System.IO.File.WriteAllText(XUnitReportFilePath, XunitXmlCreator.GetXmlString(testResult));
+            }
 
             CleanUp();
             return Constants.RETURN_SUCCESSFULL;

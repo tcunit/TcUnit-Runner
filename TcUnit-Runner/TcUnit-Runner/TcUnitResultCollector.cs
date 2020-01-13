@@ -18,7 +18,7 @@ namespace TcUnit.TcUnit_Runner
             TEST_SUITE_STATISTICS, // For example: | ID=1 number of tests=4, number of failed tests=1		
             TEST_NAME, // For example: | Test name=WhenWarningMessageExpectWarningMessageLocalTimestampAndTwoParameters
             TEST_CLASS_NAME, // For example: | Test class name=PRG_TEST.fbDiagnosticMessageFlagsParser_Test
-            TEST_STATUS, // For example: | Test status=SUCCESS
+            TEST_STATUS_AND_NUMBER_OF_ASSERTS, // For example: | Test status=SUCCESS, number of asserts=3
             TEST_ASSERT_MESSAGE, // For example: | Test assert message=Test 'Warning message' failed at 'diagnosis type'
             TEST_ASSERT_TYPE, // For example: | Test assert type=ANY
         }
@@ -113,13 +113,13 @@ namespace TcUnit.TcUnit_Runner
                 string testSuiteTestCaseStatus = "";
                 string testSuiteTestCaseFailureMessage = "";
                 string testSuiteTestCaseAssertType = "";
+                uint testSuiteTestCaseNumberOfAsserts = 0;
                 List<TcUnitTestResult.TestCaseResult> testSuiteTestCaseResults = new List<TcUnitTestResult.TestCaseResult>();
 
                 /* Find all test suite IDs. There must be one ID for every test suite. The ID starts at 0, so
                  * if we have 5 test suites, we should expect the IDs to be 0, 1, 2, 3, 4 */
                 foreach (var item in errorList.Where(e => e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelLow))
                 {
-
                     /* -------------------------------------
                         Look for test suite finished running
                        ------------------------------------- */
@@ -236,7 +236,7 @@ namespace TcUnit.TcUnit_Runner
                             // Parse test class name
                             string testClassName = item.Description.Substring(item.Description.LastIndexOf("| Test class name=") + 18);
                             testSuiteTestCaseClassName = testClassName;
-                            expectedErrorLogEntryType = ErrorLogEntryType.TEST_STATUS;
+                            expectedErrorLogEntryType = ErrorLogEntryType.TEST_STATUS_AND_NUMBER_OF_ASSERTS;
                         }
                         else
                         {
@@ -246,15 +246,21 @@ namespace TcUnit.TcUnit_Runner
                     }
 
                     /* -------------------------------------
-                       Look for test status
+                       Look for test status and number of asserts
                        ------------------------------------- */
-                    else if (item.Description.Contains("| Test status="))
+                    else if (item.Description.Contains("| Test status=") && item.Description.Contains(", number of asserts="))
                     {
-                        if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_STATUS)
+                        if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_STATUS_AND_NUMBER_OF_ASSERTS)
                         {
                             // Parse test status
-                            string testStatus = item.Description.Substring(item.Description.LastIndexOf("| Test status=") + 14);
+                            string testStatus = GetStringBetween(item.Description, "| Test status=", ", number of asserts=");
+                            string testNumberOfAssertions = item.Description.Substring(item.Description.LastIndexOf(", number of asserts=") + 20);
+
                             testSuiteTestCaseStatus = testStatus;
+                            if (!uint.TryParse(testNumberOfAssertions, out testSuiteTestCaseNumberOfAsserts))
+                            {
+                                // Handle error
+                            }
                             /* Now two things can happen. Either the test result/status is FAIL, in which case we want to read the
                                assertion information. If the test result/status is not FAIL, we either continue to the next test case
                                or the next test suite */
@@ -262,7 +268,7 @@ namespace TcUnit.TcUnit_Runner
                                 expectedErrorLogEntryType = ErrorLogEntryType.TEST_ASSERT_MESSAGE;
                             else {
                                 // Store test case
-                                TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult(testSuiteTestCaseName, testSuiteTestCaseClassName, testSuiteTestCaseStatus, "", "");
+                                TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult(testSuiteTestCaseName, testSuiteTestCaseClassName, testSuiteTestCaseStatus, "", "", testSuiteTestCaseNumberOfAsserts);
 
                                 // Add test case result to test cases results
                                 testSuiteTestCaseResults.Add(tcResult);
@@ -288,7 +294,7 @@ namespace TcUnit.TcUnit_Runner
                         }
                         else
                         {
-                            log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_STATUS.ToString());
+                            log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_STATUS_AND_NUMBER_OF_ASSERTS.ToString());
                             return null;
                         }
                     }
@@ -325,7 +331,7 @@ namespace TcUnit.TcUnit_Runner
                             testSuiteTestCaseAssertType = testAssertType;
 
                             // Store test case
-                            TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult(testSuiteTestCaseName, testSuiteTestCaseClassName, testSuiteTestCaseStatus, testSuiteTestCaseFailureMessage, testSuiteTestCaseAssertType);
+                            TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult(testSuiteTestCaseName, testSuiteTestCaseClassName, testSuiteTestCaseStatus, testSuiteTestCaseFailureMessage, testSuiteTestCaseAssertType, testSuiteTestCaseNumberOfAsserts);
                             
                             // Add test case result to test cases results
                             testSuiteTestCaseResults.Add(tcResult);

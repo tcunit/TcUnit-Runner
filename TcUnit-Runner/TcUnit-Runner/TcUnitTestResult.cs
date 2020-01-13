@@ -75,13 +75,15 @@ namespace TcUnit.TcUnit_Runner
             public string TestStatus;
             public string FailureMessage;
             public string AssertType;
-            public TestCaseResult(string testName, string testClassName, string testStatus, string failureMessage, string assertType)
+            public uint NumberOfAsserts;
+            public TestCaseResult(string testName, string testClassName, string testStatus, string failureMessage, string assertType, uint numberOfAsserts)
             {
                 TestName = testName;
                 TestClassName = testClassName;
                 TestStatus = testStatus;
                 FailureMessage = failureMessage;
                 AssertType = assertType;
+                NumberOfAsserts = numberOfAsserts;
             }
         }
 

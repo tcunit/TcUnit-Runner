@@ -63,6 +63,9 @@ namespace TcUnit.TcUnit_Runner
                     XmlAttribute testCaseAttributeName = xmlDoc.CreateAttribute("name");
                     testCaseAttributeName.Value = tcResult.TestName;
                     testCaseNode.Attributes.Append(testCaseAttributeName);
+                    XmlAttribute testCaseAttributeNumberOfAsserts = xmlDoc.CreateAttribute("assertions");
+                    testCaseAttributeNumberOfAsserts.Value = tcResult.NumberOfAsserts.ToString();
+                    testCaseNode.Attributes.Append(testCaseAttributeNumberOfAsserts);
                     XmlAttribute testCaseAttributeTestClassName = xmlDoc.CreateAttribute("classname");
                     testCaseAttributeTestClassName.Value = tcResult.TestClassName;
                     testCaseNode.Attributes.Append(testCaseAttributeTestClassName);
