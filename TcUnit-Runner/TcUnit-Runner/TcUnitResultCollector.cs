@@ -166,7 +166,7 @@ namespace TcUnit.TcUnit_Runner
                         if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_SUITE_STATISTICS)
                         {
                             // Parse test suite results (number of tests + number of failed tests)
-                            string numberOfTestsString = GetStringBetween(item.Description, "ID=" + currentTestIdentity + " number of tests=", ", number of failed tests=");
+                            string numberOfTestsString = Utilities.GetStringBetween(item.Description, "ID=" + currentTestIdentity + " number of tests=", ", number of failed tests=");
                             if (!uint.TryParse(numberOfTestsString, out testSuiteNumberOfTests))
                             {
                                 // Handle error
@@ -253,7 +253,7 @@ namespace TcUnit.TcUnit_Runner
                         if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_STATUS_AND_NUMBER_OF_ASSERTS)
                         {
                             // Parse test status
-                            string testStatus = GetStringBetween(item.Description, "| Test status=", ", number of asserts=");
+                            string testStatus = Utilities.GetStringBetween(item.Description, "| Test status=", ", number of asserts=");
                             string testNumberOfAssertions = item.Description.Substring(item.Description.LastIndexOf(", number of asserts=") + 20);
 
                             testSuiteTestCaseStatus = testStatus;
@@ -368,17 +368,6 @@ namespace TcUnit.TcUnit_Runner
             }
         }
 
-        /// <summary>
-        /// Returns the string between firstString and lastString
-        /// </summary>
-        private string GetStringBetween(string str, string firstString, string lastString)
-        {
-            string finalString;
-            int pos1 = str.IndexOf(firstString) + firstString.Length;
-            int pos2 = str.IndexOf(lastString);
-            finalString = str.Substring(pos1, pos2 - pos1);
-            return finalString;
-        }
 
         /// <summary>
         /// Returns whether test results are available

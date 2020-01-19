@@ -17,7 +17,6 @@ namespace TcUnit.TcUnit_Runner
     {
         private static string VisualStudioSolutionFilePath = null;
         private static string TwinCATProjectFilePath = null;
-        private static bool extendedLogEnabled = false;
         private static VisualStudioInstance vsInstance;
         private static ILog log = LogManager.GetLogger("TcUnit-Runner");
 
@@ -31,8 +30,6 @@ namespace TcUnit.TcUnit_Runner
 
             OptionSet options = new OptionSet()
                 .Add("v=|VisualStudioSolutionFilePath=", v => VisualStudioSolutionFilePath = v)
-                .Add("t=|TwinCATProjectFilePath=", t => TwinCATProjectFilePath = t)
-                .Add("l|ExtendedLog", "Enable extended logging", l => extendedLogEnabled = true)
                 .Add("?|h|help", h => showHelp = h != null);
 
             try
@@ -49,7 +46,7 @@ namespace TcUnit.TcUnit_Runner
             /* Make sure the user has supplied the paths for both the Visual Studio solution file
              * and the TwinCAT project file. Also verify that these two files exists.
              */
-            if (showHelp || VisualStudioSolutionFilePath == null || TwinCATProjectFilePath == null)
+            if (showHelp || VisualStudioSolutionFilePath == null)
             {
                 DisplayHelp(options);
                 return Constants.RETURN_ERROR;
@@ -59,16 +56,24 @@ namespace TcUnit.TcUnit_Runner
                 log.Error("ERROR: Visual studio solution " + VisualStudioSolutionFilePath + " does not exist!");
                 return Constants.RETURN_ERROR;
             }
-            if (!File.Exists(TwinCATProjectFilePath))
-            {
-                log.Error("ERROR : TwinCAT project file " + TwinCATProjectFilePath + " does not exist!");
-                return Constants.RETURN_ERROR;
-            }
+            
 
             LogBasicInfo();
             MessageFilter.Register();
 
-            string tcVersion = TcVersion.GetTcVersion(TwinCATProjectFilePath);
+            TwinCATProjectFilePath = TcFileUtilities.FindTwinCATProjectFile(VisualStudioSolutionFilePath);
+            if (String.IsNullOrEmpty(TwinCATProjectFilePath)) {
+                log.Error("ERROR: Did not find TwinCAT project file in solution. Is this a TwinCAT project?");
+                return Constants.RETURN_TWINCAT_PROJECT_FILE_NOT_FOUND;
+            }
+
+            if (!File.Exists(TwinCATProjectFilePath))
+            {
+                log.Error("ERROR : TwinCAT project file " + TwinCATProjectFilePath + " does not exist!");
+                return Constants.RETURN_TWINCAT_PROJECT_FILE_NOT_FOUND;
+            }
+
+            string tcVersion = TcFileUtilities.GetTcVersion(TwinCATProjectFilePath);
             if (String.IsNullOrEmpty(tcVersion))
             {
                 log.Error("ERROR: Did not find TwinCAT version in TwinCAT project file path");
@@ -77,7 +82,7 @@ namespace TcUnit.TcUnit_Runner
 
             try
             {
-                vsInstance = new VisualStudioInstance(@VisualStudioSolutionFilePath, tcVersion);
+                vsInstance = new VisualStudioInstance(@VisualStudioSolutionFilePath);
                 vsInstance.Load();
             }
             catch
@@ -98,9 +103,9 @@ namespace TcUnit.TcUnit_Runner
 
             if (automationInterface.PlcTreeItem.ChildCount <= 0)
             {
-                log.Error("ERROR: No PLC-project exists in solution");
+                log.Error("ERROR: No PLC-project exists in TwinCAT project");
                 CleanUp();
-                return Constants.RETURN_NO_PLC_PROJECT_IN_SOLUTION;
+                return Constants.RETURN_NO_PLC_PROJECT_IN_TWINCAT_PROJECT;
             }
 
             /* Build the solution and collect any eventual errors. Make sure to
@@ -204,7 +209,7 @@ namespace TcUnit.TcUnit_Runner
         {
             Console.WriteLine("Usage: TcUnit-Runner [OPTIONS]");
             Console.WriteLine("Loads the TcUnit-runner program with the selected visual studio solution and TwinCAT project.");
-            Console.WriteLine("Example: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\" -t \"C:\\Jenkins\\workspace\\TcProject\\PlcProject1\\PlcProj.tsproj\"");
+            Console.WriteLine("Example: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\"");
             Console.WriteLine();
             Console.WriteLine("Options:");
             p.WriteOptionDescriptions(Console.Out);

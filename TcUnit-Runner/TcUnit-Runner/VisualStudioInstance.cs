@@ -27,15 +27,16 @@ namespace TcUnit.TcUnit_Runner
         ILog log = LogManager.GetLogger("TcUnit-Runner");
         private bool loaded = false;
 
-        public VisualStudioInstance(string @visualStudioSolutionFilePath, string tcVersion)
+        public VisualStudioInstance(string @visualStudioSolutionFilePath)
         {
             this.filePath = visualStudioSolutionFilePath;
             string visualStudioVersion = FindVisualStudioVersion();
+            string twinCatVersion = TcFileUtilities.GetTcVersion(visualStudioSolutionFilePath);
             this.vsVersion = visualStudioVersion;
-            this.tcVersion = tcVersion;
+            this.tcVersion = twinCatVersion;
         }
 
-        public VisualStudioInstance(int vsVersionMajor, int vsVersionMinor, string tcVersion)
+        public VisualStudioInstance(int vsVersionMajor, int vsVersionMinor)
         {
             string visualStudioVersion = vsVersionMajor.ToString() + "." + vsVersionMinor.ToString();
             this.vsVersion = visualStudioVersion;
@@ -105,6 +106,8 @@ namespace TcUnit.TcUnit_Runner
             return vsVersion;
         }
 
+        
+
         private void LoadDevelopmentToolsEnvironment(string visualStudioVersion)
         {
             /* Make sure the DTE loads with the same version of Visual Studio as the
@@ -113,7 +116,13 @@ namespace TcUnit.TcUnit_Runner
             string VisualStudioProgId;
 
 
-            // TODO: Change this so it first tries the TcXaeShell, if fails, then does the VisulStudio
+            /* TODO: Change this so it first tries
+             1. The version of Visual Studio used to create the project.
+             2. If it fails try to use any DTE starting from 12.0 (2013) up to the latest DTE
+             3. If no DTE is found, give up
+             - Also, if the version is greater than 15.0 (2017) or later, try to use the TcXaeShell first. If that fails
+               used VisulStudio as DTE
+             */
             if (visualStudioVersion.Equals("15.0"))
             {
                 VisualStudioProgId = "TcXaeShell.DTE." + visualStudioVersion;

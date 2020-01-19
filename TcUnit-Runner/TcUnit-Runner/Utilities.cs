@@ -89,5 +89,36 @@ namespace TcUnit.TcUnit_Runner
             dt = dt.AddHours(TimeZone.CurrentTimeZone.GetUtcOffset(dt).Hours);
             return dt;
         }
+
+        /// <summary>
+        /// Returns the string between firstString and lastString
+        /// </summary>
+        public static string GetStringBetween(string str, string firstString, string lastString)
+        {
+            string finalString;
+            int pos1 = str.IndexOf(firstString) + firstString.Length;
+            int pos2 = str.IndexOf(lastString);
+            finalString = str.Substring(pos1, pos2 - pos1);
+            return finalString;
+        }
+
+        /// <summary>
+        /// Gets a string up until stopAt
+        /// </summary>
+        /// <returns>Empty if nothing found</returns>
+        public static string GetUntilOrEmpty(string text, string stopAt)
+        {
+            if (!String.IsNullOrWhiteSpace(text))
+            {
+                int charLocation = text.IndexOf(stopAt, StringComparison.Ordinal);
+
+                if (charLocation > 0)
+                {
+                    return text.Substring(0, charLocation);
+                }
+            }
+
+            return String.Empty;
+        }
     }
 }
