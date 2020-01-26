@@ -17,6 +17,7 @@ namespace TcUnit.TcUnit_Runner
     {
         private static string VisualStudioSolutionFilePath = null;
         private static string TwinCATProjectFilePath = null;
+        private static string TcUnitTaskName = null;
         private static VisualStudioInstance vsInstance;
         private static ILog log = LogManager.GetLogger("TcUnit-Runner");
 
@@ -29,7 +30,8 @@ namespace TcUnit.TcUnit_Runner
             log4net.Config.XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(AppDomain.CurrentDomain.BaseDirectory + "log4net.config"));
 
             OptionSet options = new OptionSet()
-                .Add("v=|VisualStudioSolutionFilePath=", v => VisualStudioSolutionFilePath = v)
+                .Add("v=|VisualStudioSolutionFilePath=", "The full path to the TwinCAT project (sln-file)", v => VisualStudioSolutionFilePath = v)
+                .Add("t=|TcUnitTaskName=","[OPTIONAL] The name of the task running TcUnit defined under \"Tasks\"", t => TcUnitTaskName = t)
                 .Add("?|h|help", h => showHelp = h != null);
 
             try
@@ -100,6 +102,30 @@ namespace TcUnit.TcUnit_Runner
             }
 
             AutomationInterface automationInterface = new AutomationInterface(vsInstance.GetProject());
+
+            Console.WriteLine("Jakob:");
+            //string realTimeTaskInfo = automationInterface.TestTreeItem.ProduceXml();
+            ITcSmTreeItem realTimeTasksTreeItem = automationInterface.RealTimeTasksTreeItem;
+
+            foreach (ITcSmTreeItem child in realTimeTasksTreeItem)
+            {
+                //Console.WriteLine(child.Name);
+                ITcSmTreeItem testTreeItem = realTimeTasksTreeItem.LookupChild(child.Name);
+                string xmlString = testTreeItem.ProduceXml();
+                Console.WriteLine(xmlString);
+            }
+
+            //ITcSmTreeItem testTreeItem = realTimeTasksTreeItem.LookupChild("");
+
+            //string xmlString = testTreeItem.ProduceXml();
+            //string xmlString = automationInterface.RealTimeTasksTreeItem.ProduceXml();
+
+
+            //Console.WriteLine(xmlString);
+
+            CleanUp();
+            Environment.Exit(0);
+
 
             if (automationInterface.PlcTreeItem.ChildCount <= 0)
             {
