@@ -123,16 +123,23 @@ namespace TcUnit.TcUnit_Runner
              - Also, if the version is greater than 15.0 (2017) or later, try to use the TcXaeShell first. If that fails
                used VisulStudio as DTE
              */
-            if (visualStudioVersion.Equals("15.0"))
+            Version vsVersion15 = new Version("15.0");
+            Version vsVersion = new Version(visualStudioVersion);
+            if (vsVersion >= vsVersion15)
             {
                 VisualStudioProgId = "TcXaeShell.DTE." + visualStudioVersion;
-            } else
-            {
+            } else {
                 VisualStudioProgId = "VisualStudio.DTE." + visualStudioVersion;
             }
+            
             type = System.Type.GetTypeFromProgID(VisualStudioProgId);
             log.Info("Loading the Visual Studio Development Tools Environment (DTE) version " + visualStudioVersion + "...");
-            dte = (EnvDTE80.DTE2)System.Activator.CreateInstance(type);
+            try { 
+                dte = (EnvDTE80.DTE2)System.Activator.CreateInstance(type);
+            } catch
+            {
+
+            }
             dte.UserControl = false; // have devenv.exe automatically close when launched using automation
             dte.SuppressUI = true;
             // Make sure all types of errors in the error list are collected
