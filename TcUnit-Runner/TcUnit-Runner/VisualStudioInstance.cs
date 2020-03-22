@@ -116,24 +116,11 @@ namespace TcUnit.TcUnit_Runner
             string VisualStudioProgId;
 
 
-            /* TODO: Change this so it first tries
-             1. The version of Visual Studio used to create the project.
-             2. If it fails try to use any DTE starting from 12.0 (2013) up to the latest DTE
-             3. If no DTE is found, give up
-             - Also, if the version is greater than 15.0 (2017) or later, try to use the TcXaeShell first. If that fails
-               used VisulStudio as DTE
-             */
-            Version vsVersion15 = new Version("15.0");
-            Version vsVersion = new Version(visualStudioVersion);
-            if (vsVersion >= vsVersion15)
-            {
-                VisualStudioProgId = "TcXaeShell.DTE." + visualStudioVersion;
-            } else {
-                VisualStudioProgId = "VisualStudio.DTE." + visualStudioVersion;
-            }
+
+
             
             type = System.Type.GetTypeFromProgID(VisualStudioProgId);
-            log.Info("Loading the Visual Studio Development Tools Environment (DTE) version " + visualStudioVersion + "...");
+            
             try { 
                 dte = (EnvDTE80.DTE2)System.Activator.CreateInstance(type);
             } catch
@@ -154,6 +141,81 @@ namespace TcUnit.TcUnit_Runner
 
             var tcAutomationSettings = dte.GetObject("TcAutomationSettings");
             tcAutomationSettings.SilentMode = true; // Only available from TC3.1.4020.0 and above
+        }
+
+
+        /// <summary>
+        /// Returns any version of Visual Studio that is available on the machine, first trying with the provided version as parameter.
+        /// If a version is found, it loads the DTE.
+        /// If it fails try to use any DTE starting from 12.0 (2013) up to the latest DTE
+        /// If no DTE is found, return null
+        /// If the version is greater than 15.0 (2017) or later, try to use the TcXaeShell first.
+        /// If that fails use VisulStudio as DTE.
+        /// </summary>
+        /// <param name="visualStudioVersion"></param>
+        /// <returns>The full visual studio prog id (for example "VisualStudio.DTE.15.0") or null if not found</returns>
+        private string VisualStudioDteAvailable(string visualStudioVersion)
+        {
+            /* Try to load the DTE with the same version of Visual Studio as the
+             * TwinCAT project was created in
+             */
+            string VisualStudioProgId;
+
+            Version vsVersion15 = new Version("15.0"); // Beckhoff started with TcXaeShell from version 15.0 (VS2017)
+            Version vsVersion = new Version(visualStudioVersion);
+            if (vsVersion >= vsVersion15)
+            {
+                VisualStudioProgId = "TcXaeShell.DTE." + visualStudioVersion;
+            }
+            else
+            {
+                VisualStudioProgId = "VisualStudio.DTE." + visualStudioVersion;
+            }
+
+            if (TryLoadDte(VisualStudioProgId))
+            {
+                return VisualStudioProgId;
+            } else
+            {
+                List<string> VisualStudioProgIds = new List<string>();
+                VisualStudioProgIds.Add("VisualStudio.DTE.12.0"); // VS2013
+                VisualStudioProgIds.Add("VisualStudio.DTE.14.0"); // VS2015
+                VisualStudioProgIds.Add("TcXaeShell.DTE.15.0"); // TcXaeShell (VS2017)
+                VisualStudioProgIds.Add("VisualStudio.DTE.15.0"); // VS2017
+
+                foreach (string visualStudioProgIdent in VisualStudioProgIds)
+                {
+                    if (TryLoadDte(visualStudioProgIdent))
+                    {
+                        return visualStudioProgIdent;
+                    }
+                }
+            }
+
+            // None found, return null
+            return null;
+
+        }
+        
+        /// <summary>
+        /// Tries to load the selected version of VisualStudioProgramIdentity
+        /// </summary>
+        /// <param name="visualStudioProgIdentity"></param>
+        /// <returns>True if successful. False if failed loading DTE</returns>
+        private bool TryLoadDte(string visualStudioProgIdentity)
+        {
+            log.Info("Trying to load the Visual Studio Development Tools Environment (DTE) version " + visualStudioProgIdentity + "...");
+            type = System.Type.GetTypeFromProgID(visualStudioProgIdentity);
+            try
+            {
+                dte = (EnvDTE80.DTE2)System.Activator.CreateInstance(type);
+                log.Info("...successful");
+                return true;
+            } catch
+            {
+                log.Info("...failed");
+                return false;
+            }
         }
 
         private void LoadSolution(string filePath)
