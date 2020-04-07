@@ -30,12 +30,13 @@ namespace TcUnit.TcUnit_Runner
             {
                 if (line.Contains("TcVersion"))
                 {
-                    string version = line.Substring(line.LastIndexOf("TcVersion=\""));
-                    int pFrom = version.IndexOf("TcVersion=\"") + "TcVersion=\"".Length;
-                    int pTo = version.LastIndexOf("\">");
-                    if (pTo > pFrom)
+                    // Get the string between TcVersion=" and "
+                    int start = line.IndexOf("TcVersion=\"") + 11;
+                    string subString = line.Substring(start);
+                    int end = subString.IndexOf("\"");
+                    if (end > 0)
                     {
-                        tcVersion = version.Substring(pFrom, pTo - pFrom);
+                        tcVersion = subString.Substring(0, end);
                         log.Info("In TwinCAT project file, found TwinCAT version " + tcVersion);
                     }
                     break;
@@ -67,8 +68,6 @@ namespace TcUnit.TcUnit_Runner
             }
             file.Close();
 
-
-
             if (!String.IsNullOrEmpty(tcProjectFile))
             {
                 int indexOfTcProjectFile = tcProjectFile.LastIndexOf("\"") + 1;
@@ -83,7 +82,6 @@ namespace TcUnit.TcUnit_Runner
 
                 }
             }
-
             return tcProjectFilePath;
         }
     }

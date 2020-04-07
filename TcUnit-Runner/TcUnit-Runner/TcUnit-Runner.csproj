@@ -73,6 +73,7 @@
     <Compile Include="TcFileUtilities.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="VisualStudioInstance.cs" />
+    <Compile Include="VisualStudioTools.cs" />
     <Compile Include="XunitXmlCreator.cs" />
   </ItemGroup>
   <ItemGroup>

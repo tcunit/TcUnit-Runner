@@ -27,11 +27,10 @@ namespace TcUnit.TcUnit_Runner
         ILog log = LogManager.GetLogger("TcUnit-Runner");
         private bool loaded = false;
 
-        public VisualStudioInstance(string @visualStudioSolutionFilePath)
+        public VisualStudioInstance(string @visualStudioSolutionFilePath, string twinCatVersion)
         {
             this.filePath = visualStudioSolutionFilePath;
-            string visualStudioVersion = FindVisualStudioVersion();
-            string twinCatVersion = TcFileUtilities.GetTcVersion(visualStudioSolutionFilePath);
+            string visualStudioVersion = VisualStudioTools.FindVisualStudioVersion(@filePath);
             this.vsVersion = visualStudioVersion;
             this.tcVersion = twinCatVersion;
         }
@@ -47,12 +46,12 @@ namespace TcUnit.TcUnit_Runner
         /// </summary>
         public void Load()
         {
-            loaded = true;
             LoadDevelopmentToolsEnvironment(vsVersion);
             if (!String.IsNullOrEmpty(@filePath))
             {
                 LoadSolution(@filePath);
                 LoadProject();
+                loaded = true;
             }
         }
 
@@ -62,71 +61,22 @@ namespace TcUnit.TcUnit_Runner
         public void Close()
         {
             if (loaded) {
-                log.Info("Closing the Visual Studio Development Tools Environment (DTE), please wait...");
+                log.Info("Closing the Visual Studio Development Tools Environment (DTE)...");
                 Thread.Sleep(20000); // Avoid 'Application is busy'-problem (RPC_E_CALL_REJECTED 0x80010001 or RPC_E_SERVERCALL_RETRYLATER 0x8001010A)
                 dte.Quit();
             }
             loaded = false;
         }
 
-        /// <summary>
-        /// Opens the main *.sln-file and finds the version of VS used for creation of the solution
-        /// </summary>
-        /// <returns>The version of Visual Studio used to create the solution</returns>
-        private string FindVisualStudioVersion()
-        {
-            /* Find Visual Studio version */
-            string line;
-            string vsVersion = null;
-
-            System.IO.StreamReader file = new System.IO.StreamReader(@filePath);
-            while ((line = file.ReadLine()) != null)
-            {
-                if (line.StartsWith("VisualStudioVersion"))
-                {
-                    string version = line.Substring(line.LastIndexOf('=') + 2);
-                    log.Info("In Visual Studio solution file, found Visual Studio version " + version);
-                    string[] numbers = version.Split('.');
-                    string major = numbers[0];
-                    string minor = numbers[1];
-
-                    int n;
-                    int n2;
-
-                    bool isNumericMajor = int.TryParse(major, out n);
-                    bool isNumericMinor = int.TryParse(minor, out n2);
-
-                    if (isNumericMajor && isNumericMinor)
-                    {
-                        vsVersion = major + "." + minor;
-                    }
-                }
-            }
-            file.Close();
-            return vsVersion;
-        }
-
-        
-
         private void LoadDevelopmentToolsEnvironment(string visualStudioVersion)
         {
             /* Make sure the DTE loads with the same version of Visual Studio as the
              * TwinCAT project was created in
              */
-            string VisualStudioProgId;
-
-
-
-
             
-            type = System.Type.GetTypeFromProgID(VisualStudioProgId);
-            
-            try { 
-                dte = (EnvDTE80.DTE2)System.Activator.CreateInstance(type);
-            } catch
-            {
+            // Load the DTE
+            string VisualStudioProgId = VisualStudioDteAvailable(visualStudioVersion);
 
-            }
             dte.UserControl = false; // have devenv.exe automatically close when launched using automation
             dte.SuppressUI = true;
             // Make sure all types of errors in the error list are collected
@@ -135,9 +85,9 @@ namespace TcUnit.TcUnit_Runner
             dte.ToolWindows.ErrorList.ShowWarnings = true;
 
             // Load the correct version of TwinCAT using the remote manager in the automation interface
-            log.Info("Using the TwinCAT remote manager to load TwinCAT version " + tcVersion + "...");
+            log.Info("Using the TwinCAT remote manager to load TwinCAT version '" + this.tcVersion + "'...");
             ITcRemoteManager remoteManager = dte.GetObject("TcRemoteManager");
-            remoteManager.Version = tcVersion;
+            remoteManager.Version = this.tcVersion;
 
             var tcAutomationSettings = dte.GetObject("TcAutomationSettings");
             tcAutomationSettings.SilentMode = true; // Only available from TC3.1.4020.0 and above
@@ -163,6 +113,8 @@ namespace TcUnit.TcUnit_Runner
 
             Version vsVersion15 = new Version("15.0"); // Beckhoff started with TcXaeShell from version 15.0 (VS2017)
             Version vsVersion = new Version(visualStudioVersion);
+
+            // Check if the TcXaeShell is installed for everything equal or above version 15.0 (VS2017)
             if (vsVersion >= vsVersion15)
             {
                 VisualStudioProgId = "TcXaeShell.DTE." + visualStudioVersion;
@@ -204,16 +156,16 @@ namespace TcUnit.TcUnit_Runner
         /// <returns>True if successful. False if failed loading DTE</returns>
         private bool TryLoadDte(string visualStudioProgIdentity)
         {
-            log.Info("Trying to load the Visual Studio Development Tools Environment (DTE) version " + visualStudioProgIdentity + "...");
+            log.Info("Trying to load the Visual Studio Development Tools Environment (DTE) version '" + visualStudioProgIdentity + "' ...");
             type = System.Type.GetTypeFromProgID(visualStudioProgIdentity);
             try
             {
                 dte = (EnvDTE80.DTE2)System.Activator.CreateInstance(type);
-                log.Info("...successful");
+                log.Info("...SUCCESSFUL!");
                 return true;
             } catch
             {
-                log.Info("...failed");
+                log.Info("...FAILED!");
                 return false;
             }
         }

@@ -45,8 +45,28 @@ namespace TcUnit.TcUnit_Runner
                 return Constants.RETURN_ERROR;
             }
 
-            /* Make sure the user has supplied the paths for both the Visual Studio solution file
-             * and the TwinCAT project file. Also verify that these two files exists.
+            /*
+             * This program consists of the following stages:
+             * 1. Verification of input
+             *    1.1. Verify that the user has supplied visual studio (VS) solution file
+             *    1.2. Verify that the solution file exists
+             * 2. Load TwinCAT project
+             *    2.1. Find TwinCAT project in VS solution file
+             *    2.2. Find which version of TwinCAT was used
+             * 3. Load the VS DTE and TwinCAT XAE with the right version of TwinCAT using the remote manager
+             * 4. Load the solution
+             * 5. Check that the solution has at least one PLC-project
+             * 6. Clean the solution
+             * 7. Build the solution. Make sure that build was successful.
+             * 8. Set target NetId to 127.0.0.1.1.1
+             * 9. If user has provided 'TcUnitTaskName', iterate all PLC projects and do:
+             *     9.1. Find the 'TcUnitTaskName', and set the <AutoStart> to TRUE and <Disabled> to FALSE for the TIRT^ of the TASK
+             *     9.2. Iterate the rest of the tasks (if there are any), and set the <AutoStart> to FALSE and <Disabled> to TRUE for the TIRT^ of the task
+             * 10. Enable boot project and set boot project autostart on 127.0.0.1.1.1
+             *
+
+            /* Make sure the user has supplied the path for the Visual Studio solution file.
+             * Also verify that this file exists.
              */
             if (showHelp || VisualStudioSolutionFilePath == null)
             {
@@ -58,7 +78,6 @@ namespace TcUnit.TcUnit_Runner
                 log.Error("ERROR: Visual studio solution " + VisualStudioSolutionFilePath + " does not exist!");
                 return Constants.RETURN_ERROR;
             }
-            
 
             LogBasicInfo();
             MessageFilter.Register();
@@ -84,7 +103,7 @@ namespace TcUnit.TcUnit_Runner
 
             try
             {
-                vsInstance = new VisualStudioInstance(@VisualStudioSolutionFilePath);
+                vsInstance = new VisualStudioInstance(@VisualStudioSolutionFilePath, tcVersion);
                 vsInstance.Load();
             }
             catch
@@ -103,7 +122,13 @@ namespace TcUnit.TcUnit_Runner
 
             AutomationInterface automationInterface = new AutomationInterface(vsInstance.GetProject());
 
-            Console.WriteLine("Jakob:");
+            if (automationInterface.PlcTreeItem.ChildCount <= 0)
+            {
+                log.Error("ERROR: No PLC-project exists in TwinCAT project");
+                CleanUp();
+                return Constants.RETURN_NO_PLC_PROJECT_IN_TWINCAT_PROJECT;
+            }
+
             //string realTimeTaskInfo = automationInterface.TestTreeItem.ProduceXml();
             ITcSmTreeItem realTimeTasksTreeItem = automationInterface.RealTimeTasksTreeItem;
 
@@ -127,12 +152,7 @@ namespace TcUnit.TcUnit_Runner
             Environment.Exit(0);
 
 
-            if (automationInterface.PlcTreeItem.ChildCount <= 0)
-            {
-                log.Error("ERROR: No PLC-project exists in TwinCAT project");
-                CleanUp();
-                return Constants.RETURN_NO_PLC_PROJECT_IN_TWINCAT_PROJECT;
-            }
+            
 
             /* Build the solution and collect any eventual errors. Make sure to
              * filter out everything that is an error
@@ -235,7 +255,8 @@ namespace TcUnit.TcUnit_Runner
         {
             Console.WriteLine("Usage: TcUnit-Runner [OPTIONS]");
             Console.WriteLine("Loads the TcUnit-runner program with the selected visual studio solution and TwinCAT project.");
-            Console.WriteLine("Example: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\"");
+            Console.WriteLine("Example #1: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\"");
+            Console.WriteLine("Example #2: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\" -t \"UnitTestTask\"");
             Console.WriteLine();
             Console.WriteLine("Options:");
             p.WriteOptionDescriptions(Console.Out);
