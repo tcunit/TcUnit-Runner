@@ -130,27 +130,53 @@ namespace TcUnit.TcUnit_Runner
             }
 
             //string realTimeTaskInfo = automationInterface.TestTreeItem.ProduceXml();
-            ITcSmTreeItem realTimeTasksTreeItem = automationInterface.RealTimeTasksTreeItem;
-
-            foreach (ITcSmTreeItem child in realTimeTasksTreeItem)
+            if (!String.IsNullOrEmpty(TcUnitTaskName))
             {
-                //Console.WriteLine(child.Name);
-                ITcSmTreeItem testTreeItem = realTimeTasksTreeItem.LookupChild(child.Name);
-                string xmlString = testTreeItem.ProduceXml();
-                Console.WriteLine(xmlString);
+                ITcSmTreeItem realTimeTasksTreeItem = automationInterface.RealTimeTasksTreeItem;
+                List<string> testTreeItemNames = new List<string>();
+                bool foundTcUnitTaskName = false;
+
+                /* Find all tasks, and check whether the user provided TcUnit task is amongst them.
+                 * Also update the task object (Update <Disabled> and <Autostart>-tag)
+                 */
+                foreach (ITcSmTreeItem child in realTimeTasksTreeItem)
+                {
+                    ITcSmTreeItem testTreeItem = realTimeTasksTreeItem.LookupChild(child.Name);
+                    string xmlString = testTreeItem.ProduceXml();
+                    string newXmlString = "";
+
+                    try
+                    {
+                        if (TcUnitTaskName.Equals(XmlUtilities.GetItemNameFromRealTimeTaskXML(xmlString)))
+                        {
+                            foundTcUnitTaskName = true;
+                            newXmlString = XmlUtilities.SetDisabledAndAndAutoStartOfRealTimeTaskXml(xmlString, false, true);
+                        } else {
+                            newXmlString = XmlUtilities.SetDisabledAndAndAutoStartOfRealTimeTaskXml(xmlString, true, false);
+                        }
+                        testTreeItem.ConsumeXml(newXmlString);
+                    }
+                    catch
+                    {
+                        log.Error("ERROR: Could not parse real time task XML data");
+                        CleanUp();
+                        return Constants.RETURN_ERROR;
+                    }
+                }
+
+                if (!foundTcUnitTaskName)
+                {
+                    log.Error("ERROR: Could not find task "+TcUnitTaskName + " in TwinCAT project");
+                    CleanUp();
+                    return Constants.RETURN_ERROR;
+                }
+
             }
-
-            //ITcSmTreeItem testTreeItem = realTimeTasksTreeItem.LookupChild("");
-
-            //string xmlString = testTreeItem.ProduceXml();
-            //string xmlString = automationInterface.RealTimeTasksTreeItem.ProduceXml();
-
-
-            //Console.WriteLine(xmlString);
-
+            
+            /*
             CleanUp();
             Environment.Exit(0);
-
+            */
 
             
 
@@ -216,7 +242,7 @@ namespace TcUnit.TcUnit_Runner
             log.Info("Waiting for results from TcUnit...");
             while (true)
             {
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(10000);
 
                 ErrorItems errorItems = vsInstance.GetErrorItems();
                 log.Info("... got " + errorItems.Count + " report lines so far.");
