@@ -180,7 +180,7 @@ namespace TcUnit.TcUnit_Runner
                 if (realTimeTasksTreeItem.ChildCount.Equals(1))
                 {
                     // Get task name
-                    ITcSmTreeItem child = realTimeTasksTreeItem.get_Child(0);
+                    ITcSmTreeItem child = realTimeTasksTreeItem.get_Child(1);
                     ITcSmTreeItem testTreeItem = realTimeTasksTreeItem.LookupChild(child.Name);
                     string xmlString = testTreeItem.ProduceXml();
                     TcUnitTaskName = XmlUtilities.GetItemNameFromRealTimeTaskXML(xmlString);
@@ -235,10 +235,6 @@ namespace TcUnit.TcUnit_Runner
              * start/restart TwinCAT */
             if (tcBuildError.Equals(0))
             {
-                /* Clean the solution. This is the only way to clean the error list which needs to be
-                 * clean prior to starting the TwinCAT runtime */
-                vsInstance.CleanSolution();
-
                 log.Info("Setting target NetId to 127.0.0.1.1.1 (localhost)");
                 automationInterface.ITcSysManager.SetTargetNetId("127.0.0.1.1.1");
                 log.Info("Enabling boot project and setting BootProjectAutostart on " + automationInterface.ITcSysManager.GetTargetNetId());
@@ -250,6 +246,17 @@ namespace TcUnit.TcUnit_Runner
                     iecProject.BootProjectAutostart = true;
                 }
                 automationInterface.ActivateConfiguration();
+
+                // Wait
+                System.Threading.Thread.Sleep(10000);
+
+                /* Clean the solution. This is the only way to clean the error list which needs to be
+                 * clean prior to starting the TwinCAT runtime */
+                vsInstance.CleanSolution();
+
+                // Wait
+                System.Threading.Thread.Sleep(10000);
+
                 automationInterface.StartRestartTwinCAT();
             } else
             {
@@ -265,7 +272,7 @@ namespace TcUnit.TcUnit_Runner
             log.Info("Waiting for results from TcUnit...");
             while (true)
             {
-                System.Threading.Thread.Sleep(10000);
+                System.Threading.Thread.Sleep(1000);
 
                 ErrorItems errorItems = vsInstance.GetErrorItems();
                 log.Info("... got " + errorItems.Count + " report lines so far.");
@@ -279,6 +286,7 @@ namespace TcUnit.TcUnit_Runner
                     */
                     System.Threading.Thread.Sleep(3000);
                     errorList.AddNew(vsInstance.GetErrorItems());
+                    Console.WriteLine("Jakob1: " + errorItems.Count);
                     break;
                 }
             }
