@@ -129,11 +129,11 @@ namespace TcUnit.TcUnit_Runner
                 return Constants.RETURN_NO_PLC_PROJECT_IN_TWINCAT_PROJECT;
             }
 
-            //string realTimeTaskInfo = automationInterface.TestTreeItem.ProduceXml();
+            ITcSmTreeItem realTimeTasksTreeItem = automationInterface.RealTimeTasksTreeItem;
+            /* Task name provided */
             if (!String.IsNullOrEmpty(TcUnitTaskName))
             {
-                ITcSmTreeItem realTimeTasksTreeItem = automationInterface.RealTimeTasksTreeItem;
-                List<string> testTreeItemNames = new List<string>();
+                log.Info("Setting task '" + TcUnitTaskName + "' enable and autostart, and all other tasks (if existing) to disable and non-autostart");
                 bool foundTcUnitTaskName = false;
 
                 /* Find all tasks, and check whether the user provided TcUnit task is amongst them.
@@ -167,6 +167,29 @@ namespace TcUnit.TcUnit_Runner
                 if (!foundTcUnitTaskName)
                 {
                     log.Error("ERROR: Could not find task "+TcUnitTaskName + " in TwinCAT project");
+                    CleanUp();
+                    return Constants.RETURN_ERROR;
+                }
+
+            }
+            /* No task name provided */
+            else
+            {
+                log.Info("No task name provided. Assuming only one task exists");
+                /* Check that only one task exists */
+                if (realTimeTasksTreeItem.ChildCount.Equals(1))
+                {
+                    // Get task name
+                    ITcSmTreeItem child = realTimeTasksTreeItem.get_Child(0);
+                    ITcSmTreeItem testTreeItem = realTimeTasksTreeItem.LookupChild(child.Name);
+                    string xmlString = testTreeItem.ProduceXml();
+                    TcUnitTaskName = XmlUtilities.GetItemNameFromRealTimeTaskXML(xmlString);
+                    log.Info("Found task with name '" + TcUnitTaskName+"'");
+                }
+                /* Not exactly one task, which is an error */
+                else
+                {
+                    log.Error("ERROR: The amount of tasks is not equal to 1 (one). Found " + realTimeTasksTreeItem.ChildCount.ToString() + " amount of tasks");
                     CleanUp();
                     return Constants.RETURN_ERROR;
                 }
@@ -261,7 +284,7 @@ namespace TcUnit.TcUnit_Runner
             }
 
             /* Parse all events (from the error list) from Visual Studio and store the results */
-            TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errorList);
+            TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errorList, TcUnitTaskName);
 
             /* Write xUnit XML report */
             if (testResult != null) {
