@@ -25,7 +25,7 @@ namespace TcUnit.TcUnit_Runner
             XmlNode disabledNode = xmlDoc.SelectSingleNode("/TreeItem/" + "Disabled");
             if (disabledNode != null)
             {
-                disabledNode.InnerText = disabled.ToString();
+                disabledNode.InnerText = disabled.ToString().ToLower();
             }
             else
             {
@@ -35,7 +35,7 @@ namespace TcUnit.TcUnit_Runner
             XmlNode autoStartNode = xmlDoc.SelectSingleNode("/TreeItem/TaskDef/" + "AutoStart");
             if (autoStartNode != null)
             {
-                autoStartNode.InnerText = autostart.ToString();
+                autoStartNode.InnerText = autostart.ToString().ToLower();
             }
             else
             {

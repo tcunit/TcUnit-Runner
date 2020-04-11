@@ -122,7 +122,6 @@ namespace TcUnit.TcUnit_Runner
                     // Only do further processing if message is from TcUnit
                     if (IsTcUnitAdsMessage(item.Description, unitTestTaskName)) {
                         tcUnitAdsMessage = RemoveEverythingButTcUnitAdsMessage(item.Description, unitTestTaskName);
-                        Console.WriteLine(tcUnitAdsMessage);
                         /* -------------------------------------
                         Look for test suite finished running
                        ------------------------------------- */

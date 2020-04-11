@@ -47,6 +47,10 @@ namespace TcUnit.TcUnit_Runner
         public void Load()
         {
             LoadDevelopmentToolsEnvironment(vsVersion);
+        }
+
+        public void LoadSolution()
+        {
             if (!String.IsNullOrEmpty(@filePath))
             {
                 LoadSolution(@filePath);

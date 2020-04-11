@@ -18,6 +18,7 @@ namespace TcUnit.TcUnit_Runner
         private static string VisualStudioSolutionFilePath = null;
         private static string TwinCATProjectFilePath = null;
         private static string TcUnitTaskName = null;
+        private static string AmsNetId = null;
         private static VisualStudioInstance vsInstance;
         private static ILog log = LogManager.GetLogger("TcUnit-Runner");
 
@@ -31,7 +32,8 @@ namespace TcUnit.TcUnit_Runner
 
             OptionSet options = new OptionSet()
                 .Add("v=|VisualStudioSolutionFilePath=", "The full path to the TwinCAT project (sln-file)", v => VisualStudioSolutionFilePath = v)
-                .Add("t=|TcUnitTaskName=","[OPTIONAL] The name of the task running TcUnit defined under \"Tasks\"", t => TcUnitTaskName = t)
+                .Add("t=|TcUnitTaskName=", "[OPTIONAL] The name of the task running TcUnit defined under \"Tasks\"", t => TcUnitTaskName = t)
+                .Add("a=|AmsNetId=", "[OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run", a => AmsNetId = a)
                 .Add("?|h|help", h => showHelp = h != null);
 
             try
@@ -62,7 +64,11 @@ namespace TcUnit.TcUnit_Runner
              * 9. If user has provided 'TcUnitTaskName', iterate all PLC projects and do:
              *     9.1. Find the 'TcUnitTaskName', and set the <AutoStart> to TRUE and <Disabled> to FALSE for the TIRT^ of the TASK
              *     9.2. Iterate the rest of the tasks (if there are any), and set the <AutoStart> to FALSE and <Disabled> to TRUE for the TIRT^ of the task
-             * 10. Enable boot project and set boot project autostart on 127.0.0.1.1.1
+             * 10. Enable boot project autostart for all PLC projects
+             * 11. Activate configuration
+             * 12. Restart TwinCAT
+             * 13. Wait until TcUnit has reported all results and collect all results
+             * 14. Write all results to xUnit compatible XML-file
              *
 
             /* Make sure the user has supplied the path for the Visual Studio solution file.
@@ -83,7 +89,8 @@ namespace TcUnit.TcUnit_Runner
             MessageFilter.Register();
 
             TwinCATProjectFilePath = TcFileUtilities.FindTwinCATProjectFile(VisualStudioSolutionFilePath);
-            if (String.IsNullOrEmpty(TwinCATProjectFilePath)) {
+            if (String.IsNullOrEmpty(TwinCATProjectFilePath))
+            {
                 log.Error("ERROR: Did not find TwinCAT project file in solution. Is this a TwinCAT project?");
                 return Constants.RETURN_TWINCAT_PROJECT_FILE_NOT_FOUND;
             }
@@ -108,7 +115,18 @@ namespace TcUnit.TcUnit_Runner
             }
             catch
             {
-                log.Error("ERROR: Error loading VS DTE. Is the correct version of Visual Studio installed?");
+                log.Error("ERROR: Error loading VS DTE. Is the correct version of Visual Studio and TwinCAT installed? Is the TcUnit-Runner running with administrator privileges?");
+                CleanUp();
+                return Constants.RETURN_ERROR;
+            }
+
+            try
+            {
+                vsInstance.LoadSolution();
+            }
+            catch
+            {
+                log.Error("ERROR: Error the solution. Try to open it manually and see that it's actually possible to open and all dependencies are working");
                 CleanUp();
                 return Constants.RETURN_ERROR;
             }
@@ -151,10 +169,13 @@ namespace TcUnit.TcUnit_Runner
                         {
                             foundTcUnitTaskName = true;
                             newXmlString = XmlUtilities.SetDisabledAndAndAutoStartOfRealTimeTaskXml(xmlString, false, true);
-                        } else {
+                        }
+                        else
+                        {
                             newXmlString = XmlUtilities.SetDisabledAndAndAutoStartOfRealTimeTaskXml(xmlString, true, false);
                         }
                         testTreeItem.ConsumeXml(newXmlString);
+                        System.Threading.Thread.Sleep(3000);
                     }
                     catch
                     {
@@ -166,12 +187,13 @@ namespace TcUnit.TcUnit_Runner
 
                 if (!foundTcUnitTaskName)
                 {
-                    log.Error("ERROR: Could not find task "+TcUnitTaskName + " in TwinCAT project");
+                    log.Error("ERROR: Could not find task " + TcUnitTaskName + " in TwinCAT project");
                     CleanUp();
                     return Constants.RETURN_ERROR;
                 }
 
             }
+
             /* No task name provided */
             else
             {
@@ -184,24 +206,22 @@ namespace TcUnit.TcUnit_Runner
                     ITcSmTreeItem testTreeItem = realTimeTasksTreeItem.LookupChild(child.Name);
                     string xmlString = testTreeItem.ProduceXml();
                     TcUnitTaskName = XmlUtilities.GetItemNameFromRealTimeTaskXML(xmlString);
-                    log.Info("Found task with name '" + TcUnitTaskName+"'");
+                    log.Info("Found task with name '" + TcUnitTaskName + "'");
+                    string newXmlString = "";
+                    newXmlString = XmlUtilities.SetDisabledAndAndAutoStartOfRealTimeTaskXml(xmlString, false, true);
+                    testTreeItem.ConsumeXml(newXmlString);
+                    System.Threading.Thread.Sleep(3000);
                 }
-                /* Not exactly one task, which is an error */
+                /* Less ore more than one task, which is an error */
                 else
                 {
-                    log.Error("ERROR: The amount of tasks is not equal to 1 (one). Found " + realTimeTasksTreeItem.ChildCount.ToString() + " amount of tasks");
+                    log.Error("ERROR: The amount of tasks is not equal to 1 (one). Found " + realTimeTasksTreeItem.ChildCount.ToString() + " amount of tasks. Please provide which task is the TcUnit task");
                     CleanUp();
                     return Constants.RETURN_ERROR;
                 }
 
             }
-            
-            /*
-            CleanUp();
-            Environment.Exit(0);
-            */
 
-            
 
             /* Build the solution and collect any eventual errors. Make sure to
              * filter out everything that is an error
@@ -245,6 +265,7 @@ namespace TcUnit.TcUnit_Runner
                     ITcPlcProject iecProject = (ITcPlcProject)plcProject;
                     iecProject.BootProjectAutostart = true;
                 }
+                System.Threading.Thread.Sleep(1000);
                 automationInterface.ActivateConfiguration();
 
                 // Wait
@@ -258,7 +279,8 @@ namespace TcUnit.TcUnit_Runner
                 System.Threading.Thread.Sleep(10000);
 
                 automationInterface.StartRestartTwinCAT();
-            } else
+            }
+            else
             {
                 log.Error("ERROR: Build errors in project");
                 CleanUp();
@@ -272,7 +294,7 @@ namespace TcUnit.TcUnit_Runner
             log.Info("Waiting for results from TcUnit...");
             while (true)
             {
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(10000);
 
                 ErrorItems errorItems = vsInstance.GetErrorItems();
                 log.Info("... got " + errorItems.Count + " report lines so far.");
@@ -286,7 +308,6 @@ namespace TcUnit.TcUnit_Runner
                     */
                     System.Threading.Thread.Sleep(3000);
                     errorList.AddNew(vsInstance.GetErrorItems());
-                    Console.WriteLine("Jakob1: " + errorItems.Count);
                     break;
                 }
             }
@@ -295,10 +316,11 @@ namespace TcUnit.TcUnit_Runner
             TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errorList, TcUnitTaskName);
 
             /* Write xUnit XML report */
-            if (testResult != null) {
+            if (testResult != null)
+            {
                 // No need to check if file (VisualStudioSolutionFilePath) exists, as this has already been done
                 string VisualStudioSolutionDirectoryPath = Path.GetDirectoryName(VisualStudioSolutionFilePath);
-                string XUnitReportFilePath = VisualStudioSolutionDirectoryPath +"\\" + Constants.XUNIT_RESULT_FILE_NAME;
+                string XUnitReportFilePath = VisualStudioSolutionDirectoryPath + "\\" + Constants.XUNIT_RESULT_FILE_NAME;
                 log.Info("Writing xUnit XML file to " + XUnitReportFilePath);
                 // Overwrites all existing content (if existing)
                 System.IO.File.WriteAllText(XUnitReportFilePath, XunitXmlCreator.GetXmlString(testResult));
@@ -314,6 +336,7 @@ namespace TcUnit.TcUnit_Runner
             Console.WriteLine("Loads the TcUnit-runner program with the selected visual studio solution and TwinCAT project.");
             Console.WriteLine("Example #1: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\"");
             Console.WriteLine("Example #2: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\" -t \"UnitTestTask\"");
+            Console.WriteLine("Example #3: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\" -t \"UnitTestTask\" -a 192.168.4.221.1.1");
             Console.WriteLine();
             Console.WriteLine("Options:");
             p.WriteOptionDescriptions(Console.Out);
