@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,14 +20,12 @@ namespace TcUnit.TcUnit_Runner
         private XunitXmlCreator()
         { }
 
-        public static string GetXmlString(TcUnitTestResult testResults)
+        public static void WriteXml(TcUnitTestResult testResults, string filePath)
         {
             XmlDocument xmlDoc = new XmlDocument();
             // <testsuites>
             XmlElement testSuitesNode = xmlDoc.CreateElement("testsuites");
             xmlDoc.AppendChild(testSuitesNode);
-            XmlDeclaration xmlDeclaration = xmlDoc.CreateXmlDeclaration("1.0", "UTF-8", null);
-            xmlDoc.InsertBefore(xmlDeclaration, testSuitesNode);
 
             // <testsuites> attributes
             XmlAttribute testSuitesAttributeFailures = xmlDoc.CreateAttribute("failures");
@@ -73,14 +72,17 @@ namespace TcUnit.TcUnit_Runner
                     testCaseAttributeStatus.Value = tcResult.TestStatus;
                     testCaseNode.Attributes.Append(testCaseAttributeStatus);
 
-                    
-                    if (tcResult.TestStatus.Equals("SKIP")) {
+
+                    if (tcResult.TestStatus.Equals("SKIP"))
+                    {
                         // <skipped>
                         XmlElement testCaseSkippedNode = xmlDoc.CreateElement("skipped");
 
                         // Append <skipped> to <testcase>
                         testCaseNode.AppendChild(testCaseSkippedNode);
-                    } else if (tcResult.TestStatus.Equals("FAIL")) {
+                    }
+                    else if (tcResult.TestStatus.Equals("FAIL"))
+                    {
                         // <failure>
                         XmlElement failureNode = xmlDoc.CreateElement("failure");
 
@@ -104,26 +106,28 @@ namespace TcUnit.TcUnit_Runner
                 testSuitesNode.AppendChild(testSuiteNode);
             }
 
-            return Beautify(xmlDoc);
+            BeautifyAndWriteToFile(xmlDoc, filePath);
         }
 
-        public static string Beautify(XmlDocument doc)
+        private static void BeautifyAndWriteToFile(XmlDocument doc, string filePath)
         {
             StringBuilder sb = new StringBuilder();
             XmlWriterSettings settings = new XmlWriterSettings
             {
+                Encoding = Encoding.UTF8,
+                ConformanceLevel = ConformanceLevel.Document,
+                OmitXmlDeclaration = false,
+                CloseOutput = true,
                 Indent = true,
                 IndentChars = "  ",
-                NewLineChars = "\r\n",
                 NewLineHandling = NewLineHandling.Replace
             };
-            using (XmlWriter writer = XmlWriter.Create(sb, settings))
+            using (StreamWriter sw = File.CreateText(filePath) )
+            using (XmlWriter writer = XmlWriter.Create(sw, settings))
             {
-                doc.Save(writer);
+                doc.WriteContentTo(writer);
+                writer.Close();
             }
-            return sb.ToString();
         }
-
-
     }
 }

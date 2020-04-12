@@ -323,7 +323,8 @@ namespace TcUnit.TcUnit_Runner
                 string XUnitReportFilePath = VisualStudioSolutionDirectoryPath + "\\" + Constants.XUNIT_RESULT_FILE_NAME;
                 log.Info("Writing xUnit XML file to " + XUnitReportFilePath);
                 // Overwrites all existing content (if existing)
-                System.IO.File.WriteAllText(XUnitReportFilePath, XunitXmlCreator.GetXmlString(testResult));
+                // System.IO.File.WriteAllText(XUnitReportFilePath, XunitXmlCreator.GetXmlString(testResult));
+                XunitXmlCreator.WriteXml(testResult, XUnitReportFilePath);
             }
 
             CleanUp();
