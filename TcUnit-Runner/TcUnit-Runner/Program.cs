@@ -1,4 +1,28 @@
-﻿using EnvDTE80;
+﻿/*
+* This program consists of the following stages:
+* 1. Verification of input
+*    1.1. Verify that the user has supplied visual studio (VS) solution file
+*    1.2. Verify that the solution file exists
+* 2. Load TwinCAT project
+*    2.1. Find TwinCAT project in VS solution file
+*    2.2. Find which version of TwinCAT was used
+* 3. Load the VS DTE and TwinCAT XAE with the right version of TwinCAT using the remote manager
+* 4. Load the solution
+* 5. Check that the solution has at least one PLC-project
+* 6. Clean the solution
+* 7. Build the solution. Make sure that build was successful.
+* 8. Set target NetId to 127.0.0.1.1.1
+* 9. If user has provided 'TcUnitTaskName', iterate all PLC projects and do:
+*     9.1. Find the 'TcUnitTaskName', and set the <AutoStart> to TRUE and <Disabled> to FALSE for the TIRT^ of the TASK
+*     9.2. Iterate the rest of the tasks (if there are any), and set the <AutoStart> to FALSE and <Disabled> to TRUE for the TIRT^ of the task
+* 10. Enable boot project autostart for all PLC projects
+* 11. Activate configuration
+* 12. Restart TwinCAT
+* 13. Wait until TcUnit has reported all results and collect all results
+* 14. Write all results to xUnit compatible XML-file
+*/
+
+using EnvDTE80;
 using log4net;
 using log4net.Config;
 using NDesk.Options;
@@ -23,7 +47,7 @@ namespace TcUnit.TcUnit_Runner
         private static ILog log = LogManager.GetLogger("TcUnit-Runner");
 
         [STAThread]
-        static int Main(string[] args)
+        static void Main(string[] args)
         {
             bool showHelp = false;
             Console.CancelKeyPress += new ConsoleCancelEventHandler(CancelKeyPressHandler);
@@ -44,45 +68,29 @@ namespace TcUnit.TcUnit_Runner
             {
                 Console.WriteLine(e.Message);
                 Console.WriteLine("Try `TcUnit-Runner --help' for more information.");
-                return Constants.RETURN_ERROR;
+                Environment.Exit(Constants.RETURN_ARGUMENT_ERROR);
             }
 
-            /*
-             * This program consists of the following stages:
-             * 1. Verification of input
-             *    1.1. Verify that the user has supplied visual studio (VS) solution file
-             *    1.2. Verify that the solution file exists
-             * 2. Load TwinCAT project
-             *    2.1. Find TwinCAT project in VS solution file
-             *    2.2. Find which version of TwinCAT was used
-             * 3. Load the VS DTE and TwinCAT XAE with the right version of TwinCAT using the remote manager
-             * 4. Load the solution
-             * 5. Check that the solution has at least one PLC-project
-             * 6. Clean the solution
-             * 7. Build the solution. Make sure that build was successful.
-             * 8. Set target NetId to 127.0.0.1.1.1
-             * 9. If user has provided 'TcUnitTaskName', iterate all PLC projects and do:
-             *     9.1. Find the 'TcUnitTaskName', and set the <AutoStart> to TRUE and <Disabled> to FALSE for the TIRT^ of the TASK
-             *     9.2. Iterate the rest of the tasks (if there are any), and set the <AutoStart> to FALSE and <Disabled> to TRUE for the TIRT^ of the task
-             * 10. Enable boot project autostart for all PLC projects
-             * 11. Activate configuration
-             * 12. Restart TwinCAT
-             * 13. Wait until TcUnit has reported all results and collect all results
-             * 14. Write all results to xUnit compatible XML-file
-             *
+            
+            if (showHelp)
+            {
+                DisplayHelp(options);
+                Environment.Exit(Constants.RETURN_SUCCESSFULL);
+            }
 
             /* Make sure the user has supplied the path for the Visual Studio solution file.
              * Also verify that this file exists.
              */
-            if (showHelp || VisualStudioSolutionFilePath == null)
+            if (VisualStudioSolutionFilePath == null)
             {
-                DisplayHelp(options);
-                return Constants.RETURN_ERROR;
+                log.Error("ERROR: Visual studio solution path not provided!");
+                Environment.Exit(Constants.RETURN_VISUAL_STUDIO_SOLUTION_PATH_NOT_PROVIDED);
             }
+
             if (!File.Exists(VisualStudioSolutionFilePath))
             {
                 log.Error("ERROR: Visual studio solution " + VisualStudioSolutionFilePath + " does not exist!");
-                return Constants.RETURN_ERROR;
+                Environment.Exit(Constants.RETURN_VISUAL_STUDIO_SOLUTION_PATH_NOT_FOUND);
             }
 
             LogBasicInfo();
@@ -92,20 +100,20 @@ namespace TcUnit.TcUnit_Runner
             if (String.IsNullOrEmpty(TwinCATProjectFilePath))
             {
                 log.Error("ERROR: Did not find TwinCAT project file in solution. Is this a TwinCAT project?");
-                return Constants.RETURN_TWINCAT_PROJECT_FILE_NOT_FOUND;
+                Environment.Exit(Constants.RETURN_TWINCAT_PROJECT_FILE_NOT_FOUND);
             }
 
             if (!File.Exists(TwinCATProjectFilePath))
             {
                 log.Error("ERROR : TwinCAT project file " + TwinCATProjectFilePath + " does not exist!");
-                return Constants.RETURN_TWINCAT_PROJECT_FILE_NOT_FOUND;
+                Environment.Exit(Constants.RETURN_TWINCAT_PROJECT_FILE_NOT_FOUND);
             }
 
             string tcVersion = TcFileUtilities.GetTcVersion(TwinCATProjectFilePath);
             if (String.IsNullOrEmpty(tcVersion))
             {
                 log.Error("ERROR: Did not find TwinCAT version in TwinCAT project file path");
-                return Constants.RETURN_TWINCAT_VERSION_NOT_FOUND;
+                Environment.Exit(Constants.RETURN_TWINCAT_VERSION_NOT_FOUND);
             }
 
             try
@@ -116,8 +124,7 @@ namespace TcUnit.TcUnit_Runner
             catch
             {
                 log.Error("ERROR: Error loading VS DTE. Is the correct version of Visual Studio and TwinCAT installed? Is the TcUnit-Runner running with administrator privileges?");
-                CleanUp();
-                return Constants.RETURN_ERROR;
+                CleanUpAndExitApplication(Constants.RETURN_ERROR_LOADING_VISUAL_STUDIO_DTE);
             }
 
             try
@@ -126,16 +133,14 @@ namespace TcUnit.TcUnit_Runner
             }
             catch
             {
-                log.Error("ERROR: Error the solution. Try to open it manually and see that it's actually possible to open and all dependencies are working");
-                CleanUp();
-                return Constants.RETURN_ERROR;
+                log.Error("ERROR: Error loading the solution. Try to open it manually and make sure it's possible to open and that all dependencies are working");
+                CleanUpAndExitApplication(Constants.RETURN_ERROR_LOADING_VISUAL_STUDIO_SOLUTION);
             }
 
             if (vsInstance.GetVisualStudioVersion() == null)
             {
                 log.Error("ERROR: Did not find Visual Studio version in Visual Studio solution file");
-                CleanUp();
-                return Constants.RETURN_ERROR;
+                CleanUpAndExitApplication(Constants.RETURN_ERROR_FINDING_VISUAL_STUDIO_SOLUTION_VERSION);
             }
 
             AutomationInterface automationInterface = new AutomationInterface(vsInstance.GetProject());
@@ -143,8 +148,7 @@ namespace TcUnit.TcUnit_Runner
             if (automationInterface.PlcTreeItem.ChildCount <= 0)
             {
                 log.Error("ERROR: No PLC-project exists in TwinCAT project");
-                CleanUp();
-                return Constants.RETURN_NO_PLC_PROJECT_IN_TWINCAT_PROJECT;
+                CleanUpAndExitApplication(Constants.RETURN_NO_PLC_PROJECT_IN_TWINCAT_PROJECT);
             }
 
             ITcSmTreeItem realTimeTasksTreeItem = automationInterface.RealTimeTasksTreeItem;
@@ -180,18 +184,15 @@ namespace TcUnit.TcUnit_Runner
                     catch
                     {
                         log.Error("ERROR: Could not parse real time task XML data");
-                        CleanUp();
-                        return Constants.RETURN_ERROR;
+                        CleanUpAndExitApplication(Constants.RETURN_NOT_POSSIBLE_TO_PARSE_REAL_TIME_TASK_XML_DATA);
                     }
                 }
 
                 if (!foundTcUnitTaskName)
                 {
                     log.Error("ERROR: Could not find task " + TcUnitTaskName + " in TwinCAT project");
-                    CleanUp();
-                    return Constants.RETURN_ERROR;
+                    CleanUpAndExitApplication(Constants.RETURN_FAILED_FINDING_DEFINED_UNIT_TEST_TASK_IN_TWINCAT_PROJECT);
                 }
-
             }
 
             /* No task name provided */
@@ -216,8 +217,7 @@ namespace TcUnit.TcUnit_Runner
                 else
                 {
                     log.Error("ERROR: The amount of tasks is not equal to 1 (one). Found " + realTimeTasksTreeItem.ChildCount.ToString() + " amount of tasks. Please provide which task is the TcUnit task");
-                    CleanUp();
-                    return Constants.RETURN_ERROR;
+                    CleanUpAndExitApplication(Constants.RETURN_TASK_COUNT_NOT_EQUAL_TO_ONE);
                 }
 
             }
@@ -283,8 +283,7 @@ namespace TcUnit.TcUnit_Runner
             else
             {
                 log.Error("ERROR: Build errors in project");
-                CleanUp();
-                return Constants.RETURN_BUILD_ERROR;
+                CleanUpAndExitApplication(Constants.RETURN_BUILD_ERROR);
             }
 
             /* Run TcUnit until the results have been returned */
@@ -323,12 +322,10 @@ namespace TcUnit.TcUnit_Runner
                 string XUnitReportFilePath = VisualStudioSolutionDirectoryPath + "\\" + Constants.XUNIT_RESULT_FILE_NAME;
                 log.Info("Writing xUnit XML file to " + XUnitReportFilePath);
                 // Overwrites all existing content (if existing)
-                // System.IO.File.WriteAllText(XUnitReportFilePath, XunitXmlCreator.GetXmlString(testResult));
                 XunitXmlCreator.WriteXml(testResult, XUnitReportFilePath);
             }
 
-            CleanUp();
-            return Constants.RETURN_SUCCESSFULL;
+            CleanUpAndExitApplication(Constants.RETURN_SUCCESSFULL);
         }
 
         static void DisplayHelp(OptionSet p)
@@ -349,14 +346,13 @@ namespace TcUnit.TcUnit_Runner
         static void CancelKeyPressHandler(object sender, ConsoleCancelEventArgs args)
         {
             log.Info("Application interrupted by user");
-            CleanUp();
-            Environment.Exit(0);
+            CleanUpAndExitApplication(Constants.RETURN_SUCCESSFULL);
         }
 
         /// <summary>
-        /// Cleans the system resources (the VS DTE)
+        /// Cleans the system resources (including the VS DTE) and exits the application
         /// </summary>
-        private static void CleanUp()
+        private static void CleanUpAndExitApplication(int exitCode)
         {
             try
             {
@@ -366,9 +362,13 @@ namespace TcUnit.TcUnit_Runner
 
             log.Info("Exiting application...");
             MessageFilter.Revoke();
+            Environment.Exit(exitCode);
         }
 
-        static void LogBasicInfo()
+        /// <summary>
+        /// Prints some basic information about the current run of TcUnit-Runner
+        /// </summary>
+        private static void LogBasicInfo()
         {
             log.Info("TcUnit-Runner build: " + Assembly.GetExecutingAssembly().GetName().Version.ToString());
             log.Info("TcUnit-Runner build date: " + Utilities.GetBuildDate(Assembly.GetExecutingAssembly()).ToShortDateString());

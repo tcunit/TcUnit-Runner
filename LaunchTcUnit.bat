@@ -45,7 +45,7 @@ IF NOT DEFINED TCUNIT_TASK_NAME (
 IF NOT DEFINED TCUNIT_AMSNETID (
     echo AmsNetId to run TwinCAT/TcUnit is not provided! Assuming TwinCAT/TcUnit will run locally '127.0.0.1.1.1'
 ) ELSE (
-    echo An AMS NetId has been provided, using: %TCUNIT_AMSNETID%
+    echo An AmsNetId has been provided, using: %TCUNIT_AMSNETID%
 )
 
 rem Find the visual studio solution file.
