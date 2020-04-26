@@ -21,7 +21,6 @@ namespace TcUnit.TcUnit_Runner
         /// <returns>The version of Visual Studio used to create the solution</returns>
         public static string FindVisualStudioVersion(string filePath)
         {
-            /* Find Visual Studio version */
             string line;
             string vsVersion = null;
 
