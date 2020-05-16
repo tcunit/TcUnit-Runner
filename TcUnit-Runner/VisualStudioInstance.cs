@@ -64,7 +64,7 @@ namespace TcUnit.TcUnit_Runner
             //string progId = VisualStudioDteAvailable(vsVersion);
 
             //dte = AttachToExistingDte(progId);
-            AttachToExistingDte();
+            //AttachToExistingDte();
 
             //log.Info("DTE: " + dte.ToString());
 
