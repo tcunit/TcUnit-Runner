@@ -1,5 +1,6 @@
 # TcUnit-Runner - TcUnit integration into Jenkins
-Welcome to the documentation of Program that makes it possible to automate runs of TcUnit unit tests
+Welcome to the documentation of TcUnit-Runner - the program that makes it possible to automate runs of TcUnit unit
+tests.
 
 TcUnit-Runner is a piece of software that makes it possible to integrate [TcUnit](https://github.com/tcunit/TcUnit)
 (TwinCAT unit tests) in a CI/CD software such as Jenkins.
@@ -13,11 +14,10 @@ supports.
 
 **Want to get started?**
 
-Read the [introduction](https://tcunit.org/tcunit-runner-introduction/),
-the [quick start](https://tcunit.org/tcunit-runner-quick-start/)
-and optionally the full [user guide](https://tcunit.org/tcunit-runner-user-guide/).
+Read the [user manual](https://tcunit.org/tcunit-runner-user-manual/).
 
-If you are completely new to unit testing in general and unit testing in TwinCAT in particular I recommend reading the:
+If you are completely new to unit testing in general and unit testing in TwinCAT in particular it's recommended
+to read the:
 
 1. [Core concepts](https://tcunit.org/unit-testing-concepts/) of unit testing
 2. [Introduction user guide to TcUnit](https://tcunit.org/introduction-user-guide/) (the TwinCAT unit testing framework)
