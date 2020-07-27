@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TcUnit-Runner", "TcUnit-Run
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "TcUnit-Runner-Setup", "TcUnit-Runner-Setup\TcUnit-Runner-Setup.vdproj", "{40EB720E-3DE1-41E0-AC95-F9C5B4DFB6A6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TcUnit-Runner-Test", "TcUnit-Runner-Test\TcUnit-Runner-Test.csproj", "{1EBEF330-60E4-4E8D-A5BB-092A0AC37412}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{107EE0D4-0FD5-42A9-8BA7-58E6FB88BB3D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{40EB720E-3DE1-41E0-AC95-F9C5B4DFB6A6}.Debug|Any CPU.ActiveCfg = Debug
 		{40EB720E-3DE1-41E0-AC95-F9C5B4DFB6A6}.Release|Any CPU.ActiveCfg = Release
+		{1EBEF330-60E4-4E8D-A5BB-092A0AC37412}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EBEF330-60E4-4E8D-A5BB-092A0AC37412}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EBEF330-60E4-4E8D-A5BB-092A0AC37412}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EBEF330-60E4-4E8D-A5BB-092A0AC37412}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
