@@ -22,3 +22,10 @@ to read the:
 1. [Core concepts](https://tcunit.org/unit-testing-concepts/) of unit testing
 2. [Introduction user guide to TcUnit](https://tcunit.org/introduction-user-guide/) (the TwinCAT unit testing framework)
 3. [TcUnit website](https://tcunit.org/)
+
+**Want to contribute?**
+
+The software is developed using Visual Studio 2013 community edition. You will also need to:
+1. Download the [Visual Studio Installer Projects Extension](https://marketplace.visualstudio.com/items?itemName=UnniRavindranathan-MSFT.MicrosoftVisualStudio2013InstallerProjects)
+for VS2013. The installation of this extension can be done prior to opening the project.
+2. Install [log4net](https://logging.apache.org/log4net/). Open the project with VS2013. Go to `TOOLS->NuGet Package Manager->Package Manager Console`. In the console enter `Install-Package log4net -Version 2.0.8`.

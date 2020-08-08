@@ -190,7 +190,7 @@ namespace TcUnit.TcUnit_Runner
 
                 if (!foundTcUnitTaskName)
                 {
-                    log.Error("ERROR: Could not find task " + TcUnitTaskName + " in TwinCAT project");
+                    log.Error("ERROR: Could not find task '" + TcUnitTaskName + "' in TwinCAT project");
                     CleanUpAndExitApplication(Constants.RETURN_FAILED_FINDING_DEFINED_UNIT_TEST_TASK_IN_TWINCAT_PROJECT);
                 }
             }
@@ -219,7 +219,6 @@ namespace TcUnit.TcUnit_Runner
                     log.Error("ERROR: The amount of tasks is not equal to 1 (one). Found " + realTimeTasksTreeItem.ChildCount.ToString() + " amount of tasks. Please provide which task is the TcUnit task");
                     CleanUpAndExitApplication(Constants.RETURN_TASK_COUNT_NOT_EQUAL_TO_ONE);
                 }
-
             }
 
 
@@ -255,8 +254,13 @@ namespace TcUnit.TcUnit_Runner
              * start/restart TwinCAT */
             if (tcBuildError.Equals(0))
             {
-                log.Info("Setting target NetId to 127.0.0.1.1.1 (localhost)");
-                automationInterface.ITcSysManager.SetTargetNetId("127.0.0.1.1.1");
+                /* Check whether the user has provided an AMS NetId. If so, use it. Otherwise use
+                 * the local AMS NetId */
+                if (String.IsNullOrEmpty(AmsNetId))
+                    AmsNetId = Constants.LOCAL_AMS_NET_ID;
+
+                log.Info("Setting target NetId to '" +AmsNetId +"'");
+                automationInterface.ITcSysManager.SetTargetNetId(AmsNetId);
                 log.Info("Enabling boot project and setting BootProjectAutostart on " + automationInterface.ITcSysManager.GetTargetNetId());
 
                 for (int i = 1; i <= automationInterface.PlcTreeItem.ChildCount; i++)

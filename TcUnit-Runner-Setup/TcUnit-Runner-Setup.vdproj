@@ -106,6 +106,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.5"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.5 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.5"
+                    }
+                }
             }
         }
     }
@@ -143,11 +151,6 @@
             "AssemblyAsmDisplayName" = "8:log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_072BDF0931CA7393A9B8C71E80419B07"
-                    {
-                    "Name" = "8:log4net.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:log4net.dll"
             "TargetName" = "8:"
@@ -174,11 +177,6 @@
             "AssemblyAsmDisplayName" = "8:System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
                 "ScatterAssemblies"
                 {
-                    "_4039EBDD4139C0DC913B990FFE1AF9D6"
-                    {
-                    "Name" = "8:System.Net.Http.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:System.Net.Http.dll"
             "TargetName" = "8:"
@@ -254,15 +252,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:TcUnit-Runner"
-        "ProductCode" = "8:{EFD6CD7D-956E-4770-82BE-AABFFB5547B6}"
-        "PackageCode" = "8:{6D20A1B7-2AC7-4F47-8A1F-95E005E73F89}"
+        "ProductCode" = "8:{9CBED105-CB1C-40FB-AEB4-7C7BCB47EC95}"
+        "PackageCode" = "8:{D4525B05-0D8F-47F2-89E1-F073504CC893}"
         "UpgradeCode" = "8:{3251C824-D724-4EA5-8E88-7C1663349701}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.0"
+        "ProductVersion" = "8:0.9.0"
         "Manufacturer" = "8:Jakob Sagatowski"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"

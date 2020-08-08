@@ -27,7 +27,10 @@ namespace TcUnit.TcUnit_Runner
         private int numberOfTests = -1;
         private int numberOfSuccessfulTests = -1;
         private int numberOfFailedTests = -1;
-
+        private const string tcUnitResult_TestSuites = "| Test suites:";
+        private const string tcUnitResult_Tests = "| Tests:";
+        private const string tcUnitResult_SuccessfulTests = "| Successful tests:";
+        private const string tcUnitResult_FailedTests = "| Failed tests:";
 
 
         public TcUnitResultCollector()
@@ -49,24 +52,24 @@ namespace TcUnit.TcUnit_Runner
                 foreach (var errorItem in errorList.Where(e => e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelHigh))
                 {
                     line = errorItem.Description;
-                    if (line.Contains("| Test suites:"))
+                    if (line.Contains(tcUnitResult_TestSuites))
                     {
-                        string noTestSuites = line.Substring(line.LastIndexOf("| Test suites:") + 15);
+                        string noTestSuites = line.Substring(line.LastIndexOf(tcUnitResult_TestSuites) + tcUnitResult_TestSuites.Length + 1);
                         Int32.TryParse(noTestSuites, out numberOfTestSuites);
                     }
-                    if (line.Contains("| Tests:"))
+                    if (line.Contains(tcUnitResult_Tests))
                     {
-                        string noTests = line.Substring(line.LastIndexOf("| Tests:") + 9);
+                        string noTests = line.Substring(line.LastIndexOf(tcUnitResult_Tests) + tcUnitResult_Tests.Length + 1);
                         Int32.TryParse(noTests, out numberOfTests);
                     }
-                    if (line.Contains("| Successful tests:"))
+                    if (line.Contains(tcUnitResult_SuccessfulTests))
                     {
-                        string noSuccessfulTests = line.Substring(line.LastIndexOf("| Successful tests:") + 20);
+                        string noSuccessfulTests = line.Substring(line.LastIndexOf(tcUnitResult_SuccessfulTests) + tcUnitResult_SuccessfulTests.Length + 1);
                         Int32.TryParse(noSuccessfulTests, out numberOfSuccessfulTests);
                     }
-                    if (line.Contains("| Failed tests:"))
+                    if (line.Contains(tcUnitResult_FailedTests))
                     {
-                        string noFailedTests = line.Substring(line.LastIndexOf("| Failed tests:") + 16);
+                        string noFailedTests = line.Substring(line.LastIndexOf(tcUnitResult_FailedTests) + tcUnitResult_FailedTests.Length + 1);
                         Int32.TryParse(noFailedTests, out numberOfFailedTests);
                     }
                 }
