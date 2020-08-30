@@ -100,9 +100,12 @@
     <Compile Include="XunitXmlCreator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="log4net_LICENSE-2.0">
+    <Content Include="NDesk_Options_LICENSE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
+    <Content Include="log4net_LICENSE-2.0">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TcUnit-Logo-Square-onlycat.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
