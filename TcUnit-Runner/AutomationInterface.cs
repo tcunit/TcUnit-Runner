@@ -28,7 +28,6 @@ namespace TcUnit.TcUnit_Runner
             plcTreeItem = sysManager.LookupTreeItem(Constants.PLC_CONFIGURATION_SHORTCUT);
             routesTreeItem = sysManager.LookupTreeItem(Constants.RT_CONFIG_ROUTE_SETTINGS_SHORTCUT);
             realTimeTasksTreeItem = sysManager.LookupTreeItem(Constants.REAL_TIME_CONFIGURATION_ADDITIONAL_TASKS);
-            //testTreeItem = sysManager.LookupTreeItem("TIRT^");
         }
 
         public AutomationInterface(VisualStudioInstance vsInst) : this(vsInst.GetProject())
@@ -57,14 +56,6 @@ namespace TcUnit.TcUnit_Runner
                 return this.realTimeTasksTreeItem;
             }
         }
-
-        /*public ITcSmTreeItem TestTreeItem
-        {
-            get
-            {
-                return this.testTreeItem;
-            }
-        }*/
 
         public ITcSmTreeItem RoutesTreeItem
         {

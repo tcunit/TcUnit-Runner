@@ -15,7 +15,7 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_072BDF0931CA7393A9B8C71E80419B07"
+        "MsmKey" = "8:_320F5EB5EEF13E4E29814972A533034B"
         "OwnerKey" = "8:_CAD7BDB7EB0E48F682B179F7A2C54B62"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -46,7 +46,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_072BDF0931CA7393A9B8C71E80419B07"
+        "OwnerKey" = "8:_320F5EB5EEF13E4E29814972A533034B"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -144,13 +144,18 @@
         }
         "File"
         {
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_072BDF0931CA7393A9B8C71E80419B07"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_320F5EB5EEF13E4E29814972A533034B"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
             "AssemblyAsmDisplayName" = "8:log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_320F5EB5EEF13E4E29814972A533034B"
+                    {
+                    "Name" = "8:log4net.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:log4net.dll"
             "TargetName" = "8:"
@@ -177,6 +182,11 @@
             "AssemblyAsmDisplayName" = "8:System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
                 "ScatterAssemblies"
                 {
+                    "_4039EBDD4139C0DC913B990FFE1AF9D6"
+                    {
+                    "Name" = "8:System.Net.Http.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:System.Net.Http.dll"
             "TargetName" = "8:"
@@ -252,8 +262,8 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:TcUnit-Runner"
-        "ProductCode" = "8:{9CBED105-CB1C-40FB-AEB4-7C7BCB47EC95}"
-        "PackageCode" = "8:{D4525B05-0D8F-47F2-89E1-F073504CC893}"
+        "ProductCode" = "8:{6B46AC01-C3F4-42F8-8989-394EC93C009D}"
+        "PackageCode" = "8:{1539534A-BC16-48C0-95C8-D1F7B28FF533}"
         "UpgradeCode" = "8:{3251C824-D724-4EA5-8E88-7C1663349701}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -268,7 +278,7 @@
         "Subject" = "8:"
         "ARPCONTACT" = "8:Jakob Sagatowski"
         "Keywords" = "8:"
-        "ARPCOMMENTS" = "8:Installer for the TcUnit-Runner 1.0.0"
+        "ARPCOMMENTS" = "8:Installer for the TcUnit-Runner"
         "ARPURLINFOABOUT" = "8:www.tcunit.org"
         "ARPPRODUCTICON" = "8:"
         "ARPIconIndex" = "3:0"
@@ -802,7 +812,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_CAD7BDB7EB0E48F682B179F7A2C54B62"
             {
-            "SourcePath" = "8:..\\TcUnit-Runner\\obj\\Debug\\TcUnit-Runner.exe"
+            "SourcePath" = "8:..\\TcUnit-Runner\\obj\\Release\\TcUnit-Runner.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_943CF4479A1241B8849D9E6751818BAC"

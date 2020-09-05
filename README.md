@@ -12,9 +12,11 @@ project automatically if a TwinCAT project is changed in the version control sys
 generated and reported in standard [xUnit/JUnit XML format](https://llg.cubic.org/docs/junit/) which Jenkins natively
 supports.
 
-**Want to get started?**
-
+**Want to get started?**  
 Read the [user manual](https://tcunit.org/tcunit-runner-user-manual/).
+
+**Want to download TcUnit-Runner?**  
+Go to the [releases](https://github.com/tcunit/TcUnit-Runner/releases).
 
 If you are completely new to unit testing in general and unit testing in TwinCAT in particular it's recommended
 to read the:

@@ -56,11 +56,12 @@ namespace TcUnit.TcUnit_Runner
         /// 1. First checking whether there is an existing VS-DTE process for this solution already created, and in that case attach to it.
         ///    If an existing process doesn't exist, go to step 2.
         /// 2. Create a new instance of the VS DTE
+        /// TODO: Implement the AttachToExistingDte() function
         /// </summary>
         public void Load()
         {
             // First try attach to an existing process
-            log.Info("Checking if there is an existing Visual Studio process to attach to ...");
+            //log.Info("Checking if there is an existing Visual Studio process to attach to ...");
             //string progId = VisualStudioDteAvailable(vsVersion);
 
             //dte = AttachToExistingDte(progId);
@@ -70,7 +71,7 @@ namespace TcUnit.TcUnit_Runner
 
             if (dte == null)
             {
-                log.Info("... none existing Visual Studio process found. Creating new instance of visual studio DTE.");
+                // log.Info("... none existing Visual Studio process found. Creating new instance of visual studio DTE.");
                 // If existing process doesn't exist, load a new DTE process
                 LoadDevelopmentToolsEnvironment(vsVersion);
             }
@@ -172,6 +173,7 @@ namespace TcUnit.TcUnit_Runner
                 VisualStudioProgIds.Add("VisualStudio.DTE.14.0"); // VS2015
                 VisualStudioProgIds.Add("TcXaeShell.DTE.15.0"); // TcXaeShell (VS2017)
                 VisualStudioProgIds.Add("VisualStudio.DTE.15.0"); // VS2017
+                VisualStudioProgIds.Add("VisualStudio.DTE.16.0"); // VS2019
 
                 foreach (string visualStudioProgIdent in VisualStudioProgIds)
                 {
@@ -270,6 +272,7 @@ namespace TcUnit.TcUnit_Runner
             return result;
         }
 
+        // TODO: Implement the AttachToExistingDte() function
         /// <summary>
         /// Uses the GetIdeInstances() method to select a DTE instance based on its solution path and, when found,
         /// attaches a new DTE object to this instance.
@@ -278,27 +281,20 @@ namespace TcUnit.TcUnit_Runner
         private EnvDTE.DTE AttachToExistingDte()
         {
             EnvDTE.DTE dteReturn = null;
-            log.Info("1");
             //Hashtable dteInstances = GetIDEInstances(false, progId);
             Hashtable dteInstances = GetIDEInstances(false);
-            log.Info("2");
             IDictionaryEnumerator hashtableEnumerator = dteInstances.GetEnumerator();
-            log.Info("3");
 
             while (hashtableEnumerator.MoveNext())
             {
-                log.Info("4");
                 EnvDTE.DTE dteTemp = hashtableEnumerator.Value as EnvDTE.DTE;
-                log.Info("5");
                 if (dteTemp.Solution.FullName == filePath)
                 {
-                    log.Info("6");
                     log.Info("Found solution in list of all open DTE objects.");
                     dteReturn = dteTemp;
                     break;
                 }
             }
-            log.Info("7");
             return dteReturn;
         }
 
