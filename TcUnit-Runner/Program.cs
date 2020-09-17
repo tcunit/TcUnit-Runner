@@ -228,13 +228,13 @@ namespace TcUnit.TcUnit_Runner
             vsInstance.CleanSolution();
             vsInstance.BuildSolution();
 
-            ErrorItems errors = vsInstance.GetErrorItems();
+            ErrorItems errorsBuild = vsInstance.GetErrorItems();
 
             int tcBuildWarnings = 0;
             int tcBuildError = 0;
-            for (int i = 1; i <= errors.Count; i++)
+            for (int i = 1; i <= errorsBuild.Count; i++)
             {
-                ErrorItem item = errors.Item(i);
+                ErrorItem item = errorsBuild.Item(i);
                 if ((item.ErrorLevel != vsBuildErrorLevel.vsBuildErrorLevelLow))
                 {
                     if (item.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelMedium)
@@ -295,28 +295,32 @@ namespace TcUnit.TcUnit_Runner
             ErrorList errorList = new ErrorList();
 
             log.Info("Waiting for results from TcUnit...");
+            
+            ErrorItems errorItems;
+
             while (true)
             {
                 System.Threading.Thread.Sleep(10000);
 
-                ErrorItems errorItems = vsInstance.GetErrorItems();
+                errorItems = vsInstance.GetErrorItems();
                 log.Info("... got " + errorItems.Count + " report lines so far.");
-
-                var newErrors = errorList.AddNew(errorItems);
-                if (tcUnitResultCollector.AreResultsAvailable(newErrors))
+                if (tcUnitResultCollector.AreResultsAvailable(errorItems))
                 {
                     log.Info("All results from TcUnit obtained");
                     /* The last test suite result can be returned after that we have received the test results, wait a few seconds
                      * and fetch again
                     */
                     System.Threading.Thread.Sleep(3000);
-                    errorList.AddNew(vsInstance.GetErrorItems());
                     break;
                 }
+
             }
 
+            var newErrors = errorList.AddNew(errorItems);
+            List<ErrorList.Error> errors = new List<ErrorList.Error>(errorList.Where(e => (e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelHigh || e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelLow)));
+
             /* Parse all events (from the error list) from Visual Studio and store the results */
-            TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errorList, TcUnitTaskName);
+            TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errors, TcUnitTaskName);
 
             /* Write xUnit XML report */
             if (testResult != null)

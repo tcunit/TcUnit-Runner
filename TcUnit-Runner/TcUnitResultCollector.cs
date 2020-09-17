@@ -40,7 +40,7 @@ namespace TcUnit.TcUnit_Runner
         /// Returns whether results are finished collecting
         /// </summary>
         /// <returns>Whether TcUnit results are available</returns>  
-        public bool AreResultsAvailable(IEnumerable<ErrorList.Error> errorList)
+        public bool AreResultsAvailable(ErrorItems errorItems)
         {
             string line;
 
@@ -49,9 +49,10 @@ namespace TcUnit.TcUnit_Runner
                 return true;
             else
             {
-                foreach (var errorItem in errorList.Where(e => e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelHigh))
+                for (int i = 1; i <= errorItems.Count; i++)
                 {
-                    line = errorItem.Description;
+                    ErrorItem error = errorItems.Item(i);
+                    line = error.Description;
                     if (line.Contains(tcUnitResult_TestSuites))
                     {
                         string noTestSuites = line.Substring(line.LastIndexOf(tcUnitResult_TestSuites) + tcUnitResult_TestSuites.Length + 1);
@@ -84,7 +85,7 @@ namespace TcUnit.TcUnit_Runner
         /// null if parse failed or results are not ready
         /// If parse succeeds, the test results are returned
         /// </returns>
-        public TcUnitTestResult ParseResults(ErrorList errorList, string unitTestTaskName)
+        public TcUnitTestResult ParseResults(IEnumerable<ErrorList.Error> errors, string unitTestTaskName)
         {
             TcUnitTestResult tcUnitTestResult = new TcUnitTestResult();
 
@@ -119,7 +120,7 @@ namespace TcUnit.TcUnit_Runner
 
                 /* Find all test suite IDs. There must be one ID for every test suite. The ID starts at 0, so
                  * if we have 5 test suites, we should expect the IDs to be 0, 1, 2, 3, 4 */
-                foreach (var item in errorList.Where(e => e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelLow))
+                foreach (var item in errors.Where(e => e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelLow))
                 {
                     string tcUnitAdsMessage;
                     // Only do further processing if message is from TcUnit
