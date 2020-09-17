@@ -318,9 +318,10 @@ namespace TcUnit.TcUnit_Runner
 
             var newErrors = errorList.AddNew(errorItems);
             List<ErrorList.Error> errors = new List<ErrorList.Error>(errorList.Where(e => (e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelHigh || e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelLow)));
+            List<ErrorList.Error> errorsSorted = errorList.OrderBy(o => o.Description).ToList();
 
             /* Parse all events (from the error list) from Visual Studio and store the results */
-            TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errors, TcUnitTaskName);
+            TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errorsSorted, TcUnitTaskName);
 
             /* Write xUnit XML report */
             if (testResult != null)
