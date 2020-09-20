@@ -136,7 +136,7 @@ namespace TcUnit.TcUnit_Runner
         /// <summary>
         /// Returns any version of Visual Studio that is available on the machine, first trying with the provided version as parameter.
         /// If a version is found, it loads the DTE.
-        /// If it fails try to use any DTE starting from 12.0 (2013) up to the latest DTE
+        /// If it fails try to use any DTE starting from the latest DTE to the oldest DTE (12.0 - VS 2013)
         /// If no DTE is found, return null
         /// If the version is greater than 15.0 (2017) or later, try to use the TcXaeShell first.
         /// If that fails use VisulStudio as DTE.
@@ -169,11 +169,11 @@ namespace TcUnit.TcUnit_Runner
             } else
             {
                 List<string> VisualStudioProgIds = new List<string>();
-                VisualStudioProgIds.Add("VisualStudio.DTE.12.0"); // VS2013
-                VisualStudioProgIds.Add("VisualStudio.DTE.14.0"); // VS2015
+                VisualStudioProgIds.Add("VisualStudio.DTE.16.0"); // VS2019
                 VisualStudioProgIds.Add("TcXaeShell.DTE.15.0"); // TcXaeShell (VS2017)
                 VisualStudioProgIds.Add("VisualStudio.DTE.15.0"); // VS2017
-                VisualStudioProgIds.Add("VisualStudio.DTE.16.0"); // VS2019
+                VisualStudioProgIds.Add("VisualStudio.DTE.14.0"); // VS2015
+                VisualStudioProgIds.Add("VisualStudio.DTE.12.0"); // VS2013
 
                 foreach (string visualStudioProgIdent in VisualStudioProgIds)
                 {

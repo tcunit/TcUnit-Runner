@@ -166,7 +166,6 @@ namespace TcUnit.TcUnit_Runner
                     ITcSmTreeItem testTreeItem = realTimeTasksTreeItem.LookupChild(child.Name);
                     string xmlString = testTreeItem.ProduceXml();
                     string newXmlString = "";
-
                     try
                     {
                         if (TcUnitTaskName.Equals(XmlUtilities.GetItemNameFromRealTimeTaskXML(xmlString)))
@@ -249,7 +248,6 @@ namespace TcUnit.TcUnit_Runner
                 }
             }
 
-
             /* If we don't have any errors, activate the configuration and 
              * start/restart TwinCAT */
             if (tcBuildError.Equals(0))
@@ -318,7 +316,7 @@ namespace TcUnit.TcUnit_Runner
 
             var newErrors = errorList.AddNew(errorItems);
             List<ErrorList.Error> errors = new List<ErrorList.Error>(errorList.Where(e => (e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelHigh || e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelLow)));
-            List<ErrorList.Error> errorsSorted = errorList.OrderBy(o => o.Description).ToList();
+            List<ErrorList.Error> errorsSorted = errors.OrderBy(o => o.Description).ToList();
 
             /* Parse all events (from the error list) from Visual Studio and store the results */
             TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errorsSorted, TcUnitTaskName);
