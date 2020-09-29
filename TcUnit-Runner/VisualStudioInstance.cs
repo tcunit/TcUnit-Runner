@@ -328,12 +328,16 @@ namespace TcUnit.TcUnit_Runner
 
         public void CleanSolution()
         {
-            visualStudioSolution.SolutionBuild.Clean(true);
+            visualStudioSolution.SolutionBuild.Build(false);
+            SpinWait.SpinUntil(() => visualStudioSolution.SolutionBuild.BuildState == EnvDTE.vsBuildState.vsBuildStateDone);
+
         }
 
         public void BuildSolution()
         {
-            visualStudioSolution.SolutionBuild.Build(true);
+            visualStudioSolution.SolutionBuild.Build(false);
+            SpinWait.SpinUntil(() => visualStudioSolution.SolutionBuild.BuildState == EnvDTE.vsBuildState.vsBuildStateDone);
+
         }
 
         public ErrorItems GetErrorItems()
