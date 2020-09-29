@@ -334,8 +334,16 @@ namespace TcUnit.TcUnit_Runner
                           ------------------------------------- */
                         else if (tcUnitAdsMessage.Contains("Test assert type="))
                         {
-                            if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_ASSERT_TYPE)
+                            if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_ASSERT_TYPE || expectedErrorLogEntryType == ErrorLogEntryType.TEST_ASSERT_MESSAGE)
                             {
+                                // If a unittest fails, it usually yields a detailed error message that explains the problem. However,
+                                // if no such message is provided, we can directly receive "Test assert type" although
+                                // expectedErrorLogEntryType = ErrorLogEntryType.TEST_ASSERT_MESSAGE . Just delete the (old) message
+                                if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_ASSERT_MESSAGE)
+                                {
+                                    testSuiteTestCaseFailureMessage = "";
+                                }
+
                                 // Parse test assert type
                                 string testAssertType = tcUnitAdsMessage.Substring(tcUnitAdsMessage.LastIndexOf("Test assert type=") + 17);
                                 testSuiteTestCaseAssertType = testAssertType;
@@ -368,7 +376,7 @@ namespace TcUnit.TcUnit_Runner
                             }
                             else
                             {
-                                log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_ASSERT_TYPE.ToString());
+                                log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " (or " + ErrorLogEntryType.TEST_ASSERT_MESSAGE.ToString() + ") but got " + ErrorLogEntryType.TEST_ASSERT_TYPE.ToString());
                                 return null;
                             }
                         }
