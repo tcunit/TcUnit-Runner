@@ -87,6 +87,7 @@ namespace TcUnit.TcUnit_Runner
         /// </returns>
         public TcUnitTestResult ParseResults(IEnumerable<ErrorList.Error> errors, string unitTestTaskName)
         {
+
             TcUnitTestResult tcUnitTestResult = new TcUnitTestResult();
 
             if (!AreTestResultsAvailable())
@@ -334,8 +335,16 @@ namespace TcUnit.TcUnit_Runner
                           ------------------------------------- */
                         else if (tcUnitAdsMessage.Contains("Test assert type="))
                         {
-                            if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_ASSERT_TYPE)
+                            if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_ASSERT_TYPE
+                                /* Even though we might expect a test assertion message, the test assertion might not have included one message, and thus we will
+                                 * skip/not receive any TEST_ASSERTION_MESSAGE but rather instead get a TEST_ASSERT_TYPE 
+                                 */
+                                || expectedErrorLogEntryType == ErrorLogEntryType.TEST_ASSERT_MESSAGE)
                             {
+                                // Make sure to reset the assertion message to empty string if we have not received any test assert message
+                                if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_ASSERT_MESSAGE)
+                                    testSuiteTestCaseFailureMessage = "";
+
                                 // Parse test assert type
                                 string testAssertType = tcUnitAdsMessage.Substring(tcUnitAdsMessage.LastIndexOf("Test assert type=") + 17);
                                 testSuiteTestCaseAssertType = testAssertType;

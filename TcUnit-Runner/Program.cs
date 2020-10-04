@@ -308,7 +308,7 @@ namespace TcUnit.TcUnit_Runner
                     /* The last test suite result can be returned after that we have received the test results, wait a few seconds
                      * and fetch again
                     */
-                    System.Threading.Thread.Sleep(3000);
+                    System.Threading.Thread.Sleep(10000);
                     break;
                 }
 
