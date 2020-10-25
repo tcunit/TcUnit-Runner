@@ -61,5 +61,20 @@ namespace TcUnit.TcUnit_Runner
             }
         }
 
+        public static bool GetPinnedVersionXML(string TwinCATProjectFilePath)
+        {
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(TwinCATProjectFilePath);
+
+            var nodePinnedVersion = xmlDoc.SelectSingleNode("/TcSmProject");
+            var attrPinnedVersion = nodePinnedVersion?.Attributes?["TcVersionFixed"];
+
+            if (nodePinnedVersion == null || attrPinnedVersion == null)
+            {
+                return false;
+             }
+             return Convert.ToBoolean(attrPinnedVersion.InnerText);
+        }
+
     }
 }
