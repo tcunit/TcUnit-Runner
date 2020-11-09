@@ -122,9 +122,9 @@ namespace TcUnit.TcUnit_Runner
             try
             {
                 vsInstance = new VisualStudioInstance(@VisualStudioSolutionFilePath, tcVersion);
-                var tcPinnedVersion = XmlUtilities.GetPinnedVersionXML(TwinCATProjectFilePath);
-                log.Info("Version is pinned: " + tcPinnedVersion);
-                vsInstance.Load(tcPinnedVersion);
+                bool IsTcVersionPinned = XmlUtilities.IsTwinCATProjectPinned(TwinCATProjectFilePath);
+                log.Info("Version is pinned: " + IsTcVersionPinned);
+                vsInstance.Load(IsTcVersionPinned);
             }
             catch
             {

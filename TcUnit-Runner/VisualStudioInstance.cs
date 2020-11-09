@@ -124,13 +124,13 @@ namespace TcUnit.TcUnit_Runner
             dte.ToolWindows.ErrorList.ShowWarnings = true;
             // First set the SilentMode and then try to open the Remote Manager
             var tcAutomationSettings = dte.GetObject("TcAutomationSettings");
-            tcAutomationSettings.SilentMode = false; // Only available from TC3.1.4020.0 and above
+            tcAutomationSettings.SilentMode = true; // Only available from TC3.1.4020.0 and above
 
             // Load the correct version of TwinCAT using the remote manager in the automation interface
             log.Info("Using the TwinCAT remote manager to load TwinCAT version '" + this.tcVersion + "'...");
             ITcRemoteManager remoteManager = dte.GetObject("TcRemoteManager");
             
-            //Check if the Version is Pinned, if the Version is Pinned check if the Pinned Version is available
+            // Check if the Version is Pinned, if the Version is Pinned check if the Pinned Version is available
             if (pinnedTCVersion)
             {
                 log.Info("Project has a pinned Version : " + this.tcVersion);

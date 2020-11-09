@@ -61,7 +61,7 @@ namespace TcUnit.TcUnit_Runner
             }
         }
 
-        public static bool GetPinnedVersionXML(string TwinCATProjectFilePath)
+        public static bool IsTwinCATProjectPinned(string TwinCATProjectFilePath)
         {
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.Load(TwinCATProjectFilePath);

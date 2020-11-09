@@ -14,7 +14,7 @@ namespace TcUnit.TcUnit_Runner
     /// </summary>
     class AutomationInterface
     {
-        private ITcSysManager13 sysManager = null;
+        private ITcSysManager10 sysManager = null;
         private ITcConfigManager configManager = null;
         private ITcSmTreeItem plcTreeItem = null;
         private ITcSmTreeItem routesTreeItem = null;
@@ -23,7 +23,7 @@ namespace TcUnit.TcUnit_Runner
 
         public AutomationInterface(EnvDTE.Project project)
         {
-            sysManager = (ITcSysManager13)project.Object;
+            sysManager = (ITcSysManager10)project.Object;
             configManager = (ITcConfigManager)sysManager.ConfigurationManager;
             plcTreeItem = sysManager.LookupTreeItem(Constants.PLC_CONFIGURATION_SHORTCUT);
             routesTreeItem = sysManager.LookupTreeItem(Constants.RT_CONFIG_ROUTE_SETTINGS_SHORTCUT);
@@ -35,7 +35,7 @@ namespace TcUnit.TcUnit_Runner
         public AutomationInterface(VisualStudioInstance vsInst) : this(vsInst.GetProject())
         { }
 
-        public ITcSysManager13 ITcSysManager
+        public ITcSysManager10 ITcSysManager
         {
             get
             {
@@ -100,13 +100,7 @@ namespace TcUnit.TcUnit_Runner
         {
             sysManager.StartRestartTwinCAT();
         }
-        public bool TcPinnedVersion
-        {
-            get
-            {
-                return sysManager.TcVersionFixed;
-            }
-        }
+
 
 
     }
