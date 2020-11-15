@@ -110,6 +110,9 @@ namespace TcUnit.TcUnit_Runner
             }
 
             string tcVersion = TcFileUtilities.GetTcVersion(TwinCATProjectFilePath);
+            
+
+
             if (String.IsNullOrEmpty(tcVersion))
             {
                 log.Error("ERROR: Did not find TwinCAT version in TwinCAT project file path");
@@ -119,14 +122,16 @@ namespace TcUnit.TcUnit_Runner
             try
             {
                 vsInstance = new VisualStudioInstance(@VisualStudioSolutionFilePath, tcVersion);
-                vsInstance.Load();
+                bool IsTcVersionPinned = XmlUtilities.IsTwinCATProjectPinned(TwinCATProjectFilePath);
+                log.Info("Version is pinned: " + IsTcVersionPinned);
+                vsInstance.Load(IsTcVersionPinned);
             }
             catch
             {
                 log.Error("ERROR: Error loading VS DTE. Is the correct version of Visual Studio and TwinCAT installed? Is the TcUnit-Runner running with administrator privileges?");
                 CleanUpAndExitApplication(Constants.RETURN_ERROR_LOADING_VISUAL_STUDIO_DTE);
             }
-
+       
             try
             {
                 vsInstance.LoadSolution();
@@ -143,13 +148,14 @@ namespace TcUnit.TcUnit_Runner
                 CleanUpAndExitApplication(Constants.RETURN_ERROR_FINDING_VISUAL_STUDIO_SOLUTION_VERSION);
             }
 
-            AutomationInterface automationInterface = new AutomationInterface(vsInstance.GetProject());
 
+            AutomationInterface automationInterface = new AutomationInterface(vsInstance.GetProject());
             if (automationInterface.PlcTreeItem.ChildCount <= 0)
             {
                 log.Error("ERROR: No PLC-project exists in TwinCAT project");
                 CleanUpAndExitApplication(Constants.RETURN_NO_PLC_PROJECT_IN_TWINCAT_PROJECT);
             }
+            
 
             ITcSmTreeItem realTimeTasksTreeItem = automationInterface.RealTimeTasksTreeItem;
             /* Task name provided */

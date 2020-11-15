@@ -58,7 +58,7 @@ namespace TcUnit.TcUnit_Runner
         /// 2. Create a new instance of the VS DTE
         /// TODO: Implement the AttachToExistingDte() function
         /// </summary>
-        public void Load()
+        public void Load( bool pinnedTcVersion)
         {
             // First try attach to an existing process
             //log.Info("Checking if there is an existing Visual Studio process to attach to ...");
@@ -73,7 +73,7 @@ namespace TcUnit.TcUnit_Runner
             {
                 // log.Info("... none existing Visual Studio process found. Creating new instance of visual studio DTE.");
                 // If existing process doesn't exist, load a new DTE process
-                LoadDevelopmentToolsEnvironment(vsVersion);
+                LoadDevelopmentToolsEnvironment(vsVersion, pinnedTcVersion);
             }
             else
             {
@@ -107,7 +107,7 @@ namespace TcUnit.TcUnit_Runner
             loaded = false;
         }
 
-        private void LoadDevelopmentToolsEnvironment(string visualStudioVersion)
+        private void LoadDevelopmentToolsEnvironment(string visualStudioVersion, bool pinnedTCVersion)
         {
             /* Make sure the DTE loads with the same version of Visual Studio as the
              * TwinCAT project was created in
@@ -115,21 +115,48 @@ namespace TcUnit.TcUnit_Runner
             
             // Load the DTE
             string VisualStudioProgId = VisualStudioDteAvailable(visualStudioVersion);
-
+            bool versionAvailable = false;
             dte.UserControl = false; // have devenv.exe automatically close when launched using automation
             dte.SuppressUI = true;
             // Make sure all types of errors in the error list are collected
             dte.ToolWindows.ErrorList.ShowErrors = true;
             dte.ToolWindows.ErrorList.ShowMessages = true;
             dte.ToolWindows.ErrorList.ShowWarnings = true;
+            // First set the SilentMode and then try to open the Remote Manager
+            var tcAutomationSettings = dte.GetObject("TcAutomationSettings");
+            tcAutomationSettings.SilentMode = true; // Only available from TC3.1.4020.0 and above
 
             // Load the correct version of TwinCAT using the remote manager in the automation interface
             log.Info("Using the TwinCAT remote manager to load TwinCAT version '" + this.tcVersion + "'...");
             ITcRemoteManager remoteManager = dte.GetObject("TcRemoteManager");
-            remoteManager.Version = this.tcVersion;
+            
+            // Check if the Version is Pinned, if the Version is Pinned check if the Pinned Version is available
+            if (pinnedTCVersion)
+            {
+                log.Info("Project has a pinned Version : " + this.tcVersion);
+                foreach (var possibleVersion in remoteManager.Versions)
+                {
+                   if (possibleVersion == this.tcVersion)
+                    {
+                      versionAvailable = true;
+                      break;
+                    }
+                }
+                if (versionAvailable)
+                {
+                    log.Info("The pinned TC Version is available ");
+                } else
+                {
+                    log.Error("The pinned TC Version is not available ");
+                    throw new Exception("The pinned TC Version is not available");
+                }
+            }
 
-            var tcAutomationSettings = dte.GetObject("TcAutomationSettings");
-            tcAutomationSettings.SilentMode = true; // Only available from TC3.1.4020.0 and above
+            if (!pinnedTCVersion || versionAvailable)
+            {
+                remoteManager.Version = this.tcVersion;
+                log.Info("Load TwinCAT version: "+ remoteManager.Version);
+            }
         }
 
 
