@@ -58,7 +58,7 @@ namespace TcUnit.TcUnit_Runner
         /// 2. Create a new instance of the VS DTE
         /// TODO: Implement the AttachToExistingDte() function
         /// </summary>
-        public void Load( bool pinnedTcVersion)
+        public void Load(bool isTcVersionPinned)
         {
             // First try attach to an existing process
             //log.Info("Checking if there is an existing Visual Studio process to attach to ...");
@@ -73,7 +73,7 @@ namespace TcUnit.TcUnit_Runner
             {
                 // log.Info("... none existing Visual Studio process found. Creating new instance of visual studio DTE.");
                 // If existing process doesn't exist, load a new DTE process
-                LoadDevelopmentToolsEnvironment(vsVersion, pinnedTcVersion);
+                LoadDevelopmentToolsEnvironment(vsVersion, isTcVersionPinned);
             }
             else
             {
@@ -107,7 +107,7 @@ namespace TcUnit.TcUnit_Runner
             loaded = false;
         }
 
-        private void LoadDevelopmentToolsEnvironment(string visualStudioVersion, bool pinnedTCVersion)
+        private void LoadDevelopmentToolsEnvironment(string visualStudioVersion, bool isTcVersionPinned)
         {
             /* Make sure the DTE loads with the same version of Visual Studio as the
              * TwinCAT project was created in
@@ -115,7 +115,7 @@ namespace TcUnit.TcUnit_Runner
             
             // Load the DTE
             string VisualStudioProgId = VisualStudioDteAvailable(visualStudioVersion);
-            bool versionAvailable = false;
+            bool isVersionAvailable = false;
             dte.UserControl = false; // have devenv.exe automatically close when launched using automation
             dte.SuppressUI = true;
             // Make sure all types of errors in the error list are collected
@@ -130,29 +130,28 @@ namespace TcUnit.TcUnit_Runner
             log.Info("Using the TwinCAT remote manager to load TwinCAT version '" + this.tcVersion + "'...");
             ITcRemoteManager remoteManager = dte.GetObject("TcRemoteManager");
             
-            // Check if the Version is Pinned, if the Version is Pinned check if the Pinned Version is available
-            if (pinnedTCVersion)
+            // If the version is pinned check if the pinned version is available
+            if (isTcVersionPinned)
             {
-                log.Info("Project has a pinned Version : " + this.tcVersion);
+                log.Info("Project has a pinned version: " + this.tcVersion);
                 foreach (var possibleVersion in remoteManager.Versions)
                 {
-                   if (possibleVersion == this.tcVersion)
+                    if (possibleVersion == this.tcVersion)
                     {
-                      versionAvailable = true;
-                      break;
+                        isVersionAvailable = true;
+                        break;
                     }
                 }
-                if (versionAvailable)
+                if (isVersionAvailable)
+                    log.Info("The pinned TwinCAT version is available ");
+                else
                 {
-                    log.Info("The pinned TC Version is available ");
-                } else
-                {
-                    log.Error("The pinned TC Version is not available ");
-                    throw new Exception("The pinned TC Version is not available");
+                    log.Error("The pinned TwinCAT version is not available ");
+                    throw new Exception("The pinned TwinCAT version is not available");
                 }
             }
 
-            if (!pinnedTCVersion || versionAvailable)
+            if (!isTcVersionPinned || isVersionAvailable)
             {
                 remoteManager.Version = this.tcVersion;
                 log.Info("Load TwinCAT version: "+ remoteManager.Version);

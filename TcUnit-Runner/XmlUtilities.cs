@@ -61,20 +61,24 @@ namespace TcUnit.TcUnit_Runner
             }
         }
 
+        /// <summary>
+        /// Check whether a TwinCAT project is pinned
+        /// </summary>
+        /// <param name="TwinCATProjectFilePath">The complete file path to the TwinCAT (*.tsproj)-file</param>
+        /// <returns>True if pinned, otherwise false</returns>
         public static bool IsTwinCATProjectPinned(string TwinCATProjectFilePath)
         {
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.Load(TwinCATProjectFilePath);
 
-            var nodePinnedVersion = xmlDoc.SelectSingleNode("/TcSmProject");
-            var attrPinnedVersion = nodePinnedVersion?.Attributes?["TcVersionFixed"];
+            XmlNode nodePinnedVersion = xmlDoc.SelectSingleNode("/TcSmProject");
+            var attrPinnedVersion = nodePinnedVersion.Attributes["TcVersionFixed"];
 
             if (nodePinnedVersion == null || attrPinnedVersion == null)
             {
                 return false;
-             }
-             return Convert.ToBoolean(attrPinnedVersion.InnerText);
+            }
+            return Convert.ToBoolean(attrPinnedVersion.InnerText);
         }
-
     }
 }

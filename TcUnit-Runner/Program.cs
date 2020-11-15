@@ -110,8 +110,6 @@ namespace TcUnit.TcUnit_Runner
             }
 
             string tcVersion = TcFileUtilities.GetTcVersion(TwinCATProjectFilePath);
-            
-
 
             if (String.IsNullOrEmpty(tcVersion))
             {
@@ -122,9 +120,9 @@ namespace TcUnit.TcUnit_Runner
             try
             {
                 vsInstance = new VisualStudioInstance(@VisualStudioSolutionFilePath, tcVersion);
-                bool IsTcVersionPinned = XmlUtilities.IsTwinCATProjectPinned(TwinCATProjectFilePath);
-                log.Info("Version is pinned: " + IsTcVersionPinned);
-                vsInstance.Load(IsTcVersionPinned);
+                bool isTcVersionPinned = XmlUtilities.IsTwinCATProjectPinned(TwinCATProjectFilePath);
+                log.Info("Version is pinned: " + isTcVersionPinned);
+                vsInstance.Load(isTcVersionPinned);
             }
             catch
             {

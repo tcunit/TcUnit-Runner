@@ -262,15 +262,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:TcUnit-Runner"
-        "ProductCode" = "8:{59373373-E7A1-4454-95B8-963F0CDF7A8D}"
-        "PackageCode" = "8:{A75DE804-2EA3-4CF3-BD56-5F664D9F18B5}"
+        "ProductCode" = "8:{85447919-A0DB-41F2-8939-3E4BC71D7D68}"
+        "PackageCode" = "8:{F4ED65B7-44B0-4C82-AD44-3528F7E937DF}"
         "UpgradeCode" = "8:{3251C824-D724-4EA5-8E88-7C1663349701}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:0.9.2"
+        "ProductVersion" = "8:0.9.3"
         "Manufacturer" = "8:Jakob Sagatowski"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -812,7 +812,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_CAD7BDB7EB0E48F682B179F7A2C54B62"
             {
-            "SourcePath" = "8:..\\TcUnit-Runner\\obj\\Release\\TcUnit-Runner.exe"
+            "SourcePath" = "8:..\\TcUnit-Runner\\obj\\Debug\\TcUnit-Runner.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_943CF4479A1241B8849D9E6751818BAC"
