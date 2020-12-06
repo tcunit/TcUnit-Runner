@@ -34,6 +34,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TCatSysManagerLib;
+using TwinCAT.Ads;
 
 namespace TcUnit.TcUnit_Runner
 {
@@ -43,6 +44,7 @@ namespace TcUnit.TcUnit_Runner
         private static string TwinCATProjectFilePath = null;
         private static string TcUnitTaskName = null;
         private static string AmsNetId = null;
+        private static List<int> AmsPorts = new List<int>();
         private static string Timeout = null;
         private static VisualStudioInstance vsInstance;
         private static ILog log = LogManager.GetLogger("TcUnit-Runner");
@@ -283,6 +285,12 @@ namespace TcUnit.TcUnit_Runner
                     ITcSmTreeItem plcProject = automationInterface.PlcTreeItem.Child[i];
                     ITcPlcProject iecProject = (ITcPlcProject)plcProject;
                     iecProject.BootProjectAutostart = true;
+
+                    /* add the port that is used for this PLC to the AmsPorts list that
+                     * is later used to monitory the AdsState
+                     */
+                    string xmlString = plcProject.ProduceXml();
+                    AmsPorts.Add(XmlUtilities.AmsPort(xmlString));
                 }
                 System.Threading.Thread.Sleep(1000);
                 automationInterface.ActivateConfiguration();
@@ -305,6 +313,10 @@ namespace TcUnit.TcUnit_Runner
                 CleanUpAndExitApplication(Constants.RETURN_BUILD_ERROR);
             }
 
+            /* Establish a connection to the ADS router
+             */
+            TcAdsClient tcAdsClient = new TcAdsClient();
+
             /* Run TcUnit until the results have been returned */
             TcUnitResultCollector tcUnitResultCollector = new TcUnitResultCollector();
             ErrorList errorList = new ErrorList();
@@ -316,6 +328,31 @@ namespace TcUnit.TcUnit_Runner
             while (true)
             {
                 System.Threading.Thread.Sleep(10000);
+
+                /* Monitor the AdsState for each PLC that is used in the
+                 * solution. If we can't connect to the Ads Router, we just
+                 * carry on.
+                 */
+                try
+                {
+                    foreach (int amsPort in AmsPorts)
+                    {
+                        tcAdsClient.Connect(AmsNetId, amsPort);
+                        AdsState adsState = tcAdsClient.ReadState().AdsState;
+                        if (adsState != AdsState.Run)
+                        {
+                            log.Error($"ERROR: invalid AdsState {adsState} <> {AdsState.Run}. This could indicate a PLC Exception, terminating ...");
+                            Environment.Exit(Constants.RETURN_INVALID_ADSSTATE);
+                        }
+                        Console.WriteLine(tcAdsClient.ReadState().AdsState);
+                    }
+                }
+                catch (Exception ex)
+                { }
+                finally
+                {
+                    tcAdsClient.Disconnect();
+                }
 
                 errorItems = vsInstance.GetErrorItems();
                 log.Info("... got " + errorItems.Count + " report lines so far.");
