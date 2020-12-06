@@ -43,6 +43,7 @@ namespace TcUnit.TcUnit_Runner
         private static string TwinCATProjectFilePath = null;
         private static string TcUnitTaskName = null;
         private static string AmsNetId = null;
+        private static string Timeout = null;
         private static VisualStudioInstance vsInstance;
         private static ILog log = LogManager.GetLogger("TcUnit-Runner");
 
@@ -58,6 +59,7 @@ namespace TcUnit.TcUnit_Runner
                 .Add("v=|VisualStudioSolutionFilePath=", "The full path to the TwinCAT project (sln-file)", v => VisualStudioSolutionFilePath = v)
                 .Add("t=|TcUnitTaskName=", "[OPTIONAL] The name of the task running TcUnit defined under \"Tasks\"", t => TcUnitTaskName = t)
                 .Add("a=|AmsNetId=", "[OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run", a => AmsNetId = a)
+                .Add("T=|Timeout=", "[OPTIONAL] Timeout the process with an error after X minutes", T => Timeout = T)
                 .Add("?|h|help", h => showHelp = h != null);
 
             try
@@ -91,6 +93,17 @@ namespace TcUnit.TcUnit_Runner
             {
                 log.Error("ERROR: Visual studio solution " + VisualStudioSolutionFilePath + " does not exist!");
                 Environment.Exit(Constants.RETURN_VISUAL_STUDIO_SOLUTION_PATH_NOT_FOUND);
+            }
+
+            /* Start a timeout for the process if the user asked for it
+             */
+            if (Timeout != null)
+            {
+                log.Info($"Timeout enabled - process times out after {Timeout} minutes");
+                System.Timers.Timer timeout = new System.Timers.Timer(Int32.Parse(Timeout) * 1000 * 60);
+                timeout.Elapsed += KillProcess;
+                timeout.AutoReset = false;
+                timeout.Start();
             }
 
             LogBasicInfo();
@@ -349,6 +362,18 @@ namespace TcUnit.TcUnit_Runner
             Console.WriteLine();
             Console.WriteLine("Options:");
             p.WriteOptionDescriptions(Console.Out);
+        }
+
+        /// <summary>
+        /// Using the Timeout option the user may specify the longest time that the process 
+        /// of this application is allowed to run. Sometimes (on low RAM machines), the
+        /// DTE build process will hang and the only way to get out of this situation is
+        /// to kill the process.
+        /// </summary>
+        static private void KillProcess(Object source, System.Timers.ElapsedEventArgs e)
+        {
+            log.Error ("ERROR: timeout occured, killing process ...");
+            Environment.Exit(Constants.RETURN_TWINCAT_VERSION_NOT_FOUND);
         }
 
         /// <summary>
