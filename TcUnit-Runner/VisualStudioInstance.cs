@@ -30,6 +30,7 @@ namespace TcUnit.TcUnit_Runner
         private string @filePath = null;
         private string vsVersion = null;
         private string tcVersion = null;
+        private string forceToThisTwinCatVersion = null;
         private EnvDTE80.DTE2 dte = null;
         private Type type = null;
         private EnvDTE.Solution visualStudioSolution = null;
@@ -37,12 +38,14 @@ namespace TcUnit.TcUnit_Runner
         ILog log = LogManager.GetLogger("TcUnit-Runner");
         private bool loaded = false;
 
-        public VisualStudioInstance(string @visualStudioSolutionFilePath, string twinCatVersion)
+        public VisualStudioInstance(string @visualStudioSolutionFilePath, string twinCatVersion, string forceToThisTwinCatVersion)
         {
             this.filePath = visualStudioSolutionFilePath;
             string visualStudioVersion = VisualStudioTools.FindVisualStudioVersion(@filePath);
             this.vsVersion = visualStudioVersion;
             this.tcVersion = twinCatVersion;
+            this.forceToThisTwinCatVersion = forceToThisTwinCatVersion;
+            
         }
 
         public VisualStudioInstance(int vsVersionMajor, int vsVersionMinor)
@@ -116,6 +119,7 @@ namespace TcUnit.TcUnit_Runner
             // Load the DTE
             string VisualStudioProgId = VisualStudioDteAvailable(visualStudioVersion);
             bool isVersionAvailable = false;
+            bool isForceVersionAvailable = false;
             dte.UserControl = false; // have devenv.exe automatically close when launched using automation
             dte.SuppressUI = true;
             // Make sure all types of errors in the error list are collected
@@ -127,35 +131,61 @@ namespace TcUnit.TcUnit_Runner
             tcAutomationSettings.SilentMode = true; // Only available from TC3.1.4020.0 and above
 
             // Load the correct version of TwinCAT using the remote manager in the automation interface
-            log.Info("Using the TwinCAT remote manager to load TwinCAT version '" + this.tcVersion + "'...");
             ITcRemoteManager remoteManager = dte.GetObject("TcRemoteManager");
-            
-            // If the version is pinned check if the pinned version is available
-            if (isTcVersionPinned)
+
+            string latestTcVersion = "";
+            // Check if Version is installed
+            foreach (var possibleVersion in remoteManager.Versions)
             {
-                log.Info("Project has a pinned version: " + this.tcVersion);
-                foreach (var possibleVersion in remoteManager.Versions)
+                latestTcVersion = Char.ToString(possibleVersion[0]);
+                if (possibleVersion == this.tcVersion)
                 {
-                    if (possibleVersion == this.tcVersion)
-                    {
-                        isVersionAvailable = true;
-                        break;
-                    }
+                    isVersionAvailable = true;
                 }
-                if (isVersionAvailable)
-                    log.Info("The pinned TwinCAT version is available ");
-                else
+                // Check if optional Version is installed
+                if (possibleVersion == this.forceToThisTwinCatVersion && this.forceToThisTwinCatVersion != null)
                 {
-                    log.Error("The pinned TwinCAT version is not available ");
-                    throw new Exception("The pinned TwinCAT version is not available");
+                    isForceVersionAvailable = true;
+                    log.Info("The optional TC Version is available ");
                 }
             }
 
-            if (!isTcVersionPinned || isVersionAvailable)
+            // If the Version is Pinned, check if the Pinned Version is available
+            if (isTcVersionPinned && (String.IsNullOrEmpty(this.forceToThisTwinCatVersion)))
+            {
+
+                  if (isVersionAvailable)
+                  {
+                      log.Info("The pinned TC Version is available ");
+                  }
+                  else
+                  {
+                      log.Error("The pinned TC Version is not available ");
+                      throw new Exception("The pinned TC Version is not available");
+                  }
+             }
+
+
+            if (isTcVersionPinned && isVersionAvailable && (String.IsNullOrEmpty(this.forceToThisTwinCatVersion)))
             {
                 remoteManager.Version = this.tcVersion;
-                log.Info("Load TwinCAT version: "+ remoteManager.Version);
             }
+            else if (isForceVersionAvailable)
+            {
+                log.Info("TC Version is forced to " + this.forceToThisTwinCatVersion);
+                remoteManager.Version = this.forceToThisTwinCatVersion;
+            }
+            else if (!isForceVersionAvailable && (!String.IsNullOrEmpty(this.forceToThisTwinCatVersion)))
+            {
+                log.Error("The Optional TC Version "+ this.forceToThisTwinCatVersion + " is not available ");
+                throw new Exception("The Optional TC Version is not available");
+            }
+            else if (latestTcVersion != "")
+            {
+                remoteManager.Version = latestTcVersion;
+            }
+            // Log the Version which will be loaded
+            log.Info("Using the TwinCAT remote manager to load TwinCAT version '" + remoteManager.Version + "'...");
         }
 
 

@@ -42,6 +42,7 @@ namespace TcUnit.TcUnit_Runner
         private static string VisualStudioSolutionFilePath = null;
         private static string TwinCATProjectFilePath = null;
         private static string TcUnitTaskName = null;
+        private static string forceToThisTwinCATVersion = null;
         private static string AmsNetId = null;
         private static VisualStudioInstance vsInstance;
         private static ILog log = LogManager.GetLogger("TcUnit-Runner");
@@ -58,8 +59,8 @@ namespace TcUnit.TcUnit_Runner
                 .Add("v=|VisualStudioSolutionFilePath=", "The full path to the TwinCAT project (sln-file)", v => VisualStudioSolutionFilePath = v)
                 .Add("t=|TcUnitTaskName=", "[OPTIONAL] The name of the task running TcUnit defined under \"Tasks\"", t => TcUnitTaskName = t)
                 .Add("a=|AmsNetId=", "[OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run", a => AmsNetId = a)
-                .Add("?|h|help", h => showHelp = h != null);
-
+                .Add("?|h|help", h => showHelp = h != null)
+                .Add("tc=|TwinCATVersion=", "[OPTIONAL] The TwinCAT version to be used to load the TwinCAT project", tc => forceToThisTwinCATVersion = tc);
             try
             {
                 options.Parse(args);
@@ -119,7 +120,7 @@ namespace TcUnit.TcUnit_Runner
 
             try
             {
-                vsInstance = new VisualStudioInstance(@VisualStudioSolutionFilePath, tcVersion);
+                vsInstance = new VisualStudioInstance(@VisualStudioSolutionFilePath, tcVersion, forceToThisTwinCATVersion);
                 bool isTcVersionPinned = XmlUtilities.IsTwinCATProjectPinned(TwinCATProjectFilePath);
                 log.Info("Version is pinned: " + isTcVersionPinned);
                 vsInstance.Load(isTcVersionPinned);
