@@ -146,7 +146,7 @@ namespace TcUnit.TcUnit_Runner
                 if (possibleVersion == this.forceToThisTwinCatVersion && this.forceToThisTwinCatVersion != null)
                 {
                     isForceVersionAvailable = true;
-                    log.Info("The optional TC Version is available ");
+                    log.Info("The optional TwinCAT version is available ");
                 }
             }
 
@@ -177,13 +177,20 @@ namespace TcUnit.TcUnit_Runner
             }
             else if (!isForceVersionAvailable && (!String.IsNullOrEmpty(this.forceToThisTwinCatVersion)))
             {
-                log.Error("The Optional TC Version "+ this.forceToThisTwinCatVersion + " is not available ");
-                throw new Exception("The Optional TC Version is not available");
+                log.Error("The optional TwinCAT version " + this.forceToThisTwinCatVersion + " is not available ");
+                throw new Exception("The optional TwinCAT version is not available");
             }
             else if (latestTcVersion != "")
             {
                 remoteManager.Version = latestTcVersion;
             }
+            else
+            {
+               log.Error("Error: It´s not possible to run TwinCAT in this configuration (TC-Option / pinned TwinCAT Version / installed TwinCAT Version ");
+               throw new Exception("Wrong configuration for this TwinCAT version ");
+            }
+
+
             // Log the Version which will be loaded
             log.Info("Using the TwinCAT remote manager to load TwinCAT version '" + remoteManager.Version + "'...");
         }

@@ -14,15 +14,15 @@ rem -t [OPTIONAL] The name of the task running TcUnit defined under "Tasks".
 rem    If this is not provided, it's assumed that only one task exists in the TwinCAT project.
 rem -a [OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run.
 rem    If this is not provided, the local AMS NetId is assumed (127.0.0.1.1.1)
-rem -tc[OPTIONAL] A fix TwinCat Version is not provided! TcUnit-Runner tries to start with Project Version
-rem    A fix TwinCat Version is using:
+rem -tc [OPTIONAL] The version of TwinCAT to be used. If this is not provided, the latest installed TwinCAT version
+rem	     will be used
 
 
 SET TCUNIT_TASK_NAME=
 SET TCUNIT_AMSNETID=
 SET TCUNIT_TCVERSION_TO_USE=
 
-CALL :Process_Parameters %1, %2, %3, %4
+CALL :Process_Parameters %1, %2, %3, %4, %5, %6
 
 rem Create parameter call to TcUnit-Runner
 SET TCUNIT_RUNNER_PARAMETERS=
@@ -57,10 +57,11 @@ IF NOT DEFINED TCUNIT_AMSNETID (
 )
 
 IF NOT DEFINED TCUNIT_TCVERSION_TO_USE (
-    echo A fix TwinCat Version is not provided! TcUnit-Runner tries to start with Project Version
+    echo A TwinCAT version is not provided! Assuming that the project version should be used
 ) ELSE (
-    echo A fix TwinCat Version is using: %TCUNIT_TCVERSION_TO_USE%
+    echo A TwinCAT version has been provided, using: %TCUNIT_TCVERSION_TO_USE%
 )
+
 
 rem Find the visual studio solution file.
 FOR /r %%i IN (*.sln) DO (
