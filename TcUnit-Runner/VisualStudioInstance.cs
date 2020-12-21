@@ -45,7 +45,6 @@ namespace TcUnit.TcUnit_Runner
             this.vsVersion = visualStudioVersion;
             this.tcVersion = twinCatVersion;
             this.forceToThisTwinCatVersion = forceToThisTwinCatVersion;
-            
         }
 
         public VisualStudioInstance(int vsVersionMajor, int vsVersionMinor)
@@ -110,7 +109,7 @@ namespace TcUnit.TcUnit_Runner
             loaded = false;
         }
 
-        private void LoadDevelopmentToolsEnvironment(string visualStudioVersion, bool isTcVersionPinned)
+        private void LoadDevelopmentToolsEnvironment(string visualStudioVersion, bool isTwinCatVersionPinned)
         {
             /* Make sure the DTE loads with the same version of Visual Studio as the
              * TwinCAT project was created in
@@ -134,7 +133,7 @@ namespace TcUnit.TcUnit_Runner
             ITcRemoteManager remoteManager = dte.GetObject("TcRemoteManager");
 
             string latestTcVersion = "";
-            // Check if Version is installed
+            // Check if version is installed
             foreach (var possibleVersion in remoteManager.Versions)
             {
                 latestTcVersion = Char.ToString(possibleVersion[0]);
@@ -142,43 +141,47 @@ namespace TcUnit.TcUnit_Runner
                 {
                     isVersionAvailable = true;
                 }
-                // Check if optional Version is installed
+                // Check if forced version is installed
                 if (possibleVersion == this.forceToThisTwinCatVersion && this.forceToThisTwinCatVersion != null)
                 {
                     isForceVersionAvailable = true;
-                    log.Info("The optional TwinCAT version is available ");
+                    log.Info("The forced TwinCAT version is available");
                 }
             }
 
-            // If the Version is Pinned, check if the Pinned Version is available
-            if (isTcVersionPinned && (String.IsNullOrEmpty(this.forceToThisTwinCatVersion)))
+            // If the version is pinned, check if the pinned version is available
+            if (isTwinCatVersionPinned && (String.IsNullOrEmpty(this.forceToThisTwinCatVersion)))
             {
-
                   if (isVersionAvailable)
                   {
-                      log.Info("The pinned TC Version is available ");
+                      log.Info("The pinned TwinCAT version is available");
                   }
                   else
                   {
-                      log.Error("The pinned TC Version is not available ");
-                      throw new Exception("The pinned TC Version is not available");
+                      log.Error("The pinned TwinCAT version is not available");
+                      throw new Exception("The pinned TwinCAT version is not available");
                   }
              }
 
 
-            if (isTcVersionPinned && isVersionAvailable && (String.IsNullOrEmpty(this.forceToThisTwinCatVersion)))
+            /* The basic procedure/priority for selection of which TwinCAT version should be used is as this:
+             * - If TwinCAT project version is forced (by -w argument to TcUnit-Runner), go with this version, otherwise...
+             * - If TwinCAT project is pinned, go with this version, otherwise...
+             * - Go with latest installed version of TwinCAT
+             */
+            if (isTwinCatVersionPinned && isVersionAvailable && (String.IsNullOrEmpty(this.forceToThisTwinCatVersion)))
             {
                 remoteManager.Version = this.tcVersion;
             }
             else if (isForceVersionAvailable)
             {
-                log.Info("TC Version is forced to " + this.forceToThisTwinCatVersion);
+                log.Info("TwinCAT version is forced to " + this.forceToThisTwinCatVersion);
                 remoteManager.Version = this.forceToThisTwinCatVersion;
             }
             else if (!isForceVersionAvailable && (!String.IsNullOrEmpty(this.forceToThisTwinCatVersion)))
             {
-                log.Error("The optional TwinCAT version " + this.forceToThisTwinCatVersion + " is not available ");
-                throw new Exception("The optional TwinCAT version is not available");
+                log.Error("The forced TwinCAT version " + this.forceToThisTwinCatVersion + " is not available");
+                throw new Exception("The forced TwinCAT version is not available");
             }
             else if (latestTcVersion != "")
             {
@@ -186,10 +189,9 @@ namespace TcUnit.TcUnit_Runner
             }
             else
             {
-               log.Error("Error: It´s not possible to run TwinCAT in this configuration (TC-Option / pinned TwinCAT Version / installed TwinCAT Version ");
-               throw new Exception("Wrong configuration for this TwinCAT version ");
+               log.Error("Error: It´s not possible to run TwinCAT in this configuration (TwinCAT-ForcedVersion / pinned TwinCAT Version / installed TwinCAT Version ");
+               throw new Exception("Wrong configuration for this TwinCAT version");
             }
-
 
             // Log the Version which will be loaded
             log.Info("Using the TwinCAT remote manager to load TwinCAT version '" + remoteManager.Version + "'...");
