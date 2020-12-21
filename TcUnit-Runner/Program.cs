@@ -62,8 +62,8 @@ namespace TcUnit.TcUnit_Runner
                 .Add("v=|VisualStudioSolutionFilePath=", "The full path to the TwinCAT project (sln-file)", v => VisualStudioSolutionFilePath = v)
                 .Add("t=|TcUnitTaskName=", "[OPTIONAL] The name of the task running TcUnit defined under \"Tasks\"", t => TcUnitTaskName = t)
                 .Add("a=|AmsNetId=", "[OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run", a => AmsNetId = a)
+                .Add("w=|TcVersion=", "[OPTIONAL] The TwinCAT version to be used to load the TwinCAT project", w => ForceToThisTwinCATVersion = w)
                 .Add("u=|Timeout=", "[OPTIONAL] Timeout the process with an error after X minutes", u => Timeout = u)
-                .Add("w=|TwinCATVersion=", "[OPTIONAL] The TwinCAT version to be used to load the TwinCAT project", w => ForceToThisTwinCATVersion = w)
                 .Add("?|h|help", h => showHelp = h != null);
             try
             {
@@ -98,18 +98,19 @@ namespace TcUnit.TcUnit_Runner
                 Environment.Exit(Constants.RETURN_VISUAL_STUDIO_SOLUTION_PATH_NOT_FOUND);
             }
 
-            /* Start a timeout for the process if the user asked for it
+            LogBasicInfo();
+
+            /* Start a timeout for the process(es) if the user asked for it
              */
             if (Timeout != null)
             {
-                log.Info($"Timeout enabled - process times out after {Timeout} minutes");
+                log.Info("Timeout enabled - process(es) timesout after " +Timeout  +" minute(s)");
                 System.Timers.Timer timeout = new System.Timers.Timer(Int32.Parse(Timeout) * 1000 * 60);
                 timeout.Elapsed += KillProcess;
                 timeout.AutoReset = false;
                 timeout.Start();
             }
 
-            LogBasicInfo();
             MessageFilter.Register();
 
             TwinCATProjectFilePath = TcFileUtilities.FindTwinCATProjectFile(VisualStudioSolutionFilePath);
@@ -342,10 +343,9 @@ namespace TcUnit.TcUnit_Runner
                         AdsState adsState = tcAdsClient.ReadState().AdsState;
                         if (adsState != AdsState.Run)
                         {
-                            log.Error($"ERROR: invalid AdsState {adsState} <> {AdsState.Run}. This could indicate a PLC Exception, terminating ...");
+                            log.Error("ERROR: invalid AdsState "+adsState +"<>" +AdsState.Run +". This could indicate a PLC Exception, terminating ...");
                             Environment.Exit(Constants.RETURN_INVALID_ADSSTATE);
                         }
-                        log.Debug($"DEBUG: AdsState={adsState}");
                     }
                 }
                 catch (Exception ex)
@@ -398,6 +398,7 @@ namespace TcUnit.TcUnit_Runner
             Console.WriteLine("Example #2: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\" -t \"UnitTestTask\"");
             Console.WriteLine("Example #3: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\" -t \"UnitTestTask\" -a 192.168.4.221.1.1");
             Console.WriteLine("Example #4: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\" -w \"3.1.4024.11\"");
+            Console.WriteLine("Example #5: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\" -u 5");
             Console.WriteLine();
             Console.WriteLine("Options:");
             p.WriteOptionDescriptions(Console.Out);
@@ -407,12 +408,12 @@ namespace TcUnit.TcUnit_Runner
         /// Using the Timeout option the user may specify the longest time that the process 
         /// of this application is allowed to run. Sometimes (on low RAM machines), the
         /// DTE build process will hang and the only way to get out of this situation is
-        /// to kill the process.
+        /// to kill this process and any eventual Visual Studio process.
         /// </summary>
         static private void KillProcess(Object source, System.Timers.ElapsedEventArgs e)
         {
-            log.Error ("ERROR: timeout occured, killing process ...");
-            Environment.Exit(Constants.RETURN_TWINCAT_VERSION_NOT_FOUND);
+            log.Error ("ERROR: timeout occured, killing process(es) ...");
+            CleanUpAndExitApplication(Constants.RETURN_TIMEOUT);
         }
 
         /// <summary>

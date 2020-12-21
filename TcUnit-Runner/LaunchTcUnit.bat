@@ -15,12 +15,15 @@ rem    If this is not provided, it's assumed that only one task exists in the Tw
 rem -a [OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run.
 rem    If this is not provided, the local AMS NetId is assumed (127.0.0.1.1.1)
 rem -w [OPTIONAL] The version of TwinCAT to be used. If this is not provided, the latest TwinCAT version
-rem	     will be used
+rem	              will be used
+rem -u [OPTIONAL] Timeout the process with an error after X minutes. If no timeout is provided,
+rem               the process might run indefinitely in case of error
 SET TCUNIT_TASK_NAME=
 SET TCUNIT_AMSNETID=
 SET TCUNIT_TCVERSION_TO_USE=
+SET TCUNIT_TIMEOUT=
 
-CALL :Process_Parameters %1, %2, %3, %4, %5, %6
+CALL :Process_Parameters %1, %2, %3, %4, %5, %6, %7, %8
 
 rem Create parameter call to TcUnit-Runner
 SET TCUNIT_RUNNER_PARAMETERS=
@@ -31,7 +34,10 @@ IF DEFINED TCUNIT_AMSNETID (
     SET TCUNIT_RUNNER_PARAMETERS=%TCUNIT_RUNNER_PARAMETERS% --AmsNetId=%TCUNIT_AMSNETID%
 )
 IF DEFINED TCUNIT_TCVERSION_TO_USE (
-    SET TCUNIT_RUNNER_PARAMETERS=%TCUNIT_RUNNER_PARAMETERS% --TwinCATVersion=%TCUNIT_TCVERSION_TO_USE%
+    SET TCUNIT_RUNNER_PARAMETERS=%TCUNIT_RUNNER_PARAMETERS% --TcVersion=%TCUNIT_TCVERSION_TO_USE%
+)
+IF DEFINED TCUNIT_TIMEOUT (
+    SET TCUNIT_RUNNER_PARAMETERS=%TCUNIT_RUNNER_PARAMETERS% --Timeout=%TCUNIT_TIMEOUT%
 )
 
 SET TCUNIT_RUNNER_EXECUTABLE_COMPLETE_PATH=%TCUNIT_RUNNER_INSTALL_DIRECTORY%\TcUnit-Runner.exe
@@ -43,21 +49,27 @@ IF NOT EXIST "%TCUNIT_RUNNER_EXECUTABLE_COMPLETE_PATH%" (
 )
 
 IF NOT DEFINED TCUNIT_TASK_NAME (
-    echo Task name of the TcUnit task not provided! Assuming only one task in TwinCAT solution
+    echo Task name of the TcUnit task not provided. Assuming only one task in TwinCAT solution
 ) ELSE (
     echo A TcUnit task name has been provided, using: %TCUNIT_TASK_NAME%
 )
 
 IF NOT DEFINED TCUNIT_AMSNETID (
-    echo AmsNetId to run TwinCAT/TcUnit is not provided! Assuming TwinCAT/TcUnit will run locally '127.0.0.1.1.1'
+    echo AmsNetId to run TwinCAT/TcUnit is not provided. Assuming TwinCAT/TcUnit will run locally '127.0.0.1.1.1'
 ) ELSE (
     echo An AmsNetId has been provided, using: %TCUNIT_AMSNETID%
 )
 
 IF NOT DEFINED TCUNIT_TCVERSION_TO_USE (
-    echo A TwinCAT version is not provided! Assuming latest TwinCAT version should be used
+    echo A TwinCAT version is not provided. Assuming latest TwinCAT version should be used
 ) ELSE (
     echo A TwinCAT version has been provided, using: %TCUNIT_TCVERSION_TO_USE%
+)
+
+IF NOT DEFINED TCUNIT_TIMEOUT (
+    echo Timeout not provided.
+) ELSE (
+    echo Timeout has been provided, using [min]: %TCUNIT_TIMEOUT%
 )
 
 
@@ -105,6 +117,12 @@ IF "%~1" == "-w" (
 IF "%~1" == "-W" (
     SET TCUNIT_TCVERSION_TO_USE=%2
 )
+IF "%~1" == "-u" (
+    SET TCUNIT_TIMEOUT=%2
+)
+IF "%~1" == "-U" (
+    SET TCUNIT_TIMEOUT=%2
+)
 
 rem Second parameter
 IF "%~3" == "-t" (
@@ -125,6 +143,12 @@ IF "%~3" == "-w" (
 IF "%~3" == "-W" (
     SET TCUNIT_TCVERSION_TO_USE=%4
 )
+IF "%~3" == "-u" (
+    SET TCUNIT_TIMEOUT=%4
+)
+IF "%~3" == "-U" (
+    SET TCUNIT_TIMEOUT=%4
+)
 
 rem Third parameter
 IF "%~5" == "-t" (
@@ -144,6 +168,38 @@ IF "%~5" == "-w" (
 )
 IF "%~5" == "-W" (
     SET TCUNIT_TCVERSION_TO_USE=%6
+)
+IF "%~5" == "-u" (
+    SET TCUNIT_TIMEOUT=%6
+)
+IF "%~5" == "-U" (
+    SET TCUNIT_TIMEOUT=%6
+)
+
+rem Fourth parameter
+IF "%~7" == "-t" (
+    SET TCUNIT_TASK_NAME=%8
+)
+IF "%~7" == "-T" (
+    SET TCUNIT_TASK_NAME=%8
+)
+IF "%~7" == "-a" (
+    SET TCUNIT_AMSNETID=%8
+)
+IF "%~7" == "-A" (
+    SET TCUNIT_AMSNETID=%8
+)
+IF "%~7" == "-w" (
+    SET TCUNIT_TCVERSION_TO_USE=%8
+)
+IF "%~7" == "-W" (
+    SET TCUNIT_TCVERSION_TO_USE=%8
+)
+IF "%~7" == "-u" (
+    SET TCUNIT_TIMEOUT=%8
+)
+IF "%~7" == "-U" (
+    SET TCUNIT_TIMEOUT=%8
 )
 
 
