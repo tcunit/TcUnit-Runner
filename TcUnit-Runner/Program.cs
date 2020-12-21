@@ -43,6 +43,7 @@ namespace TcUnit.TcUnit_Runner
         private static string VisualStudioSolutionFilePath = null;
         private static string TwinCATProjectFilePath = null;
         private static string TcUnitTaskName = null;
+        private static string ForceToThisTwinCATVersion = null;
         private static string AmsNetId = null;
         private static List<int> AmsPorts = new List<int>();
         private static string Timeout = null;
@@ -62,8 +63,8 @@ namespace TcUnit.TcUnit_Runner
                 .Add("t=|TcUnitTaskName=", "[OPTIONAL] The name of the task running TcUnit defined under \"Tasks\"", t => TcUnitTaskName = t)
                 .Add("a=|AmsNetId=", "[OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run", a => AmsNetId = a)
                 .Add("Timeout=", "[OPTIONAL] Timeout the process with an error after X minutes", t => Timeout = t)
+                .Add("w=|TwinCATVersion=", "[OPTIONAL] The TwinCAT version to be used to load the TwinCAT project", w => ForceToThisTwinCATVersion = w)
                 .Add("?|h|help", h => showHelp = h != null);
-
             try
             {
                 options.Parse(args);
@@ -134,7 +135,7 @@ namespace TcUnit.TcUnit_Runner
 
             try
             {
-                vsInstance = new VisualStudioInstance(@VisualStudioSolutionFilePath, tcVersion);
+                vsInstance = new VisualStudioInstance(@VisualStudioSolutionFilePath, tcVersion, ForceToThisTwinCATVersion);
                 bool isTcVersionPinned = XmlUtilities.IsTwinCATProjectPinned(TwinCATProjectFilePath);
                 log.Info("Version is pinned: " + isTcVersionPinned);
                 vsInstance.Load(isTcVersionPinned);
@@ -396,6 +397,7 @@ namespace TcUnit.TcUnit_Runner
             Console.WriteLine("Example #1: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\"");
             Console.WriteLine("Example #2: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\" -t \"UnitTestTask\"");
             Console.WriteLine("Example #3: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\" -t \"UnitTestTask\" -a 192.168.4.221.1.1");
+            Console.WriteLine("Example #4: TcUnit-Runner -v \"C:\\Jenkins\\workspace\\TcProject\\TcProject.sln\" -w \"3.1.4024.11\"");
             Console.WriteLine();
             Console.WriteLine("Options:");
             p.WriteOptionDescriptions(Console.Out);
