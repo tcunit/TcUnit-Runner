@@ -61,7 +61,7 @@ namespace TcUnit.TcUnit_Runner
                 .Add("v=|VisualStudioSolutionFilePath=", "The full path to the TwinCAT project (sln-file)", v => VisualStudioSolutionFilePath = v)
                 .Add("t=|TcUnitTaskName=", "[OPTIONAL] The name of the task running TcUnit defined under \"Tasks\"", t => TcUnitTaskName = t)
                 .Add("a=|AmsNetId=", "[OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run", a => AmsNetId = a)
-                .Add("T=|Timeout=", "[OPTIONAL] Timeout the process with an error after X minutes", T => Timeout = T)
+                .Add("Timeout=", "[OPTIONAL] Timeout the process with an error after X minutes", t => Timeout = t)
                 .Add("?|h|help", h => showHelp = h != null);
 
             try
