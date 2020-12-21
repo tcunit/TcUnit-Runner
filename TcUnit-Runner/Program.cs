@@ -344,7 +344,7 @@ namespace TcUnit.TcUnit_Runner
                             log.Error($"ERROR: invalid AdsState {adsState} <> {AdsState.Run}. This could indicate a PLC Exception, terminating ...");
                             Environment.Exit(Constants.RETURN_INVALID_ADSSTATE);
                         }
-                        Console.WriteLine(tcAdsClient.ReadState().AdsState);
+                        log.Debug($"DEBUG: AdsState={adsState}");
                     }
                 }
                 catch (Exception ex)
