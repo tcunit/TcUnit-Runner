@@ -14,10 +14,15 @@ rem -t [OPTIONAL] The name of the task running TcUnit defined under "Tasks".
 rem    If this is not provided, it's assumed that only one task exists in the TwinCAT project.
 rem -a [OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run.
 rem    If this is not provided, the local AMS NetId is assumed (127.0.0.1.1.1)
+rem -tc [OPTIONAL] The version of TwinCAT to be used. If this is not provided, the latest installed TwinCAT version
+rem	     will be used
+
+
 SET TCUNIT_TASK_NAME=
 SET TCUNIT_AMSNETID=
+SET TCUNIT_TCVERSION_TO_USE=
 
-CALL :Process_Parameters %1, %2, %3, %4
+CALL :Process_Parameters %1, %2, %3, %4, %5, %6
 
 rem Create parameter call to TcUnit-Runner
 SET TCUNIT_RUNNER_PARAMETERS=
@@ -26,6 +31,9 @@ IF DEFINED TCUNIT_TASK_NAME (
 )
 IF DEFINED TCUNIT_AMSNETID (
     SET TCUNIT_RUNNER_PARAMETERS=%TCUNIT_RUNNER_PARAMETERS% --AmsNetId=%TCUNIT_AMSNETID%
+)
+IF DEFINED TCUNIT_TCVERSION_TO_USE (
+    SET TCUNIT_RUNNER_PARAMETERS=%TCUNIT_RUNNER_PARAMETERS% --TwinCATVersion=%TCUNIT_TCVERSION_TO_USE%
 )
 
 SET TCUNIT_RUNNER_EXECUTABLE_COMPLETE_PATH=%TCUNIT_RUNNER_INSTALL_DIRECTORY%\TcUnit-Runner.exe
@@ -47,6 +55,13 @@ IF NOT DEFINED TCUNIT_AMSNETID (
 ) ELSE (
     echo An AmsNetId has been provided, using: %TCUNIT_AMSNETID%
 )
+
+IF NOT DEFINED TCUNIT_TCVERSION_TO_USE (
+    echo A TwinCAT version is not provided! Assuming that the project version should be used
+) ELSE (
+    echo A TwinCAT version has been provided, using: %TCUNIT_TCVERSION_TO_USE%
+)
+
 
 rem Find the visual studio solution file.
 FOR /r %%i IN (*.sln) DO (
@@ -87,6 +102,14 @@ IF "%~1" == "-A" (
     SET TCUNIT_AMSNETID=%2
 )
 
+IF "%~1" == "-tc" (
+    SET TCUNIT_TCVERSION_TO_USE=%2
+)
+
+IF "%~1" == "-TC" (
+    SET TCUNIT_TCVERSION_TO_USE=%2
+)
+
 rem Second parameter
 IF "%~3" == "-t" (
     SET TCUNIT_TASK_NAME=%4
@@ -100,6 +123,14 @@ IF "%~3" == "-a" (
 IF "%~3" == "-A" (
     SET TCUNIT_AMSNETID=%4
 )
+IF "%~3" == "-tc" (
+    SET TCUNIT_TCVERSION_TO_USE=%4
+)
+
+IF "%~3" == "-TC" (
+    SET TCUNIT_TCVERSION_TO_USE=%4
+)
+
 
 GOTO:EOF
 
