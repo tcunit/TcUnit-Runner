@@ -80,5 +80,17 @@ namespace TcUnit.TcUnit_Runner
             }
             return Convert.ToBoolean(attrPinnedVersion.InnerText);
         }
+
+        /// <summary>
+        /// Returns the Port that is used for a PLC node
+        /// </summary>
+        public static int AmsPort(string plcXml)
+        {
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(plcXml);
+
+            XmlNode nodeAdsPort = xmlDoc.SelectSingleNode("/TreeItem/PlcProjectDef/" + "AdsPort");
+            return Convert.ToInt32(nodeAdsPort.InnerText);
+        }
     }
 }

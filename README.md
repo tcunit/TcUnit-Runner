@@ -30,4 +30,5 @@ to read the:
 The software is developed using Visual Studio 2013 community edition. You will also need to:
 1. Download the [Visual Studio Installer Projects Extension](https://marketplace.visualstudio.com/items?itemName=UnniRavindranathan-MSFT.MicrosoftVisualStudio2013InstallerProjects)
 for VS2013. The installation of this extension can be done prior to opening the project.
-2. Install [log4net](https://logging.apache.org/log4net/). Open the project with VS2013. Go to `TOOLS->NuGet Package Manager->Package Manager Console`. In the console enter `Install-Package log4net -Version 2.0.8`.
+2. Install [log4net](https://logging.apache.org/log4net/). Open the project with VS2013. Go to `TOOLS->NuGet Package Manager->Package Manager Console`. In the console enter `Install-Package log4net -Version 2.0.12`.
+3. Install [Beckhoff.TwinCAT.Ads](https://infosys.beckhoff.com/english.php?content=../content/1033/tc3_adsnetref/index.html&id=). Open the project with VS2013. Go to `TOOLS->NuGet Package Manager->Package Manager Console`. In the console enter `Install-Package Beckhoff.TwinCAT.Ads -Version 4.4.10`.

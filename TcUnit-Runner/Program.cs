@@ -34,6 +34,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TCatSysManagerLib;
+using TwinCAT.Ads;
 
 namespace TcUnit.TcUnit_Runner
 {
@@ -44,6 +45,8 @@ namespace TcUnit.TcUnit_Runner
         private static string TcUnitTaskName = null;
         private static string ForceToThisTwinCATVersion = null;
         private static string AmsNetId = null;
+        private static List<int> AmsPorts = new List<int>();
+        private static string Timeout = null;
         private static VisualStudioInstance vsInstance;
         private static ILog log = LogManager.GetLogger("TcUnit-Runner");
 
@@ -59,6 +62,7 @@ namespace TcUnit.TcUnit_Runner
                 .Add("v=|VisualStudioSolutionFilePath=", "The full path to the TwinCAT project (sln-file)", v => VisualStudioSolutionFilePath = v)
                 .Add("t=|TcUnitTaskName=", "[OPTIONAL] The name of the task running TcUnit defined under \"Tasks\"", t => TcUnitTaskName = t)
                 .Add("a=|AmsNetId=", "[OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run", a => AmsNetId = a)
+                .Add("u=|Timeout=", "[OPTIONAL] Timeout the process with an error after X minutes", u => Timeout = u)
                 .Add("w=|TwinCATVersion=", "[OPTIONAL] The TwinCAT version to be used to load the TwinCAT project", w => ForceToThisTwinCATVersion = w)
                 .Add("?|h|help", h => showHelp = h != null);
             try
@@ -92,6 +96,17 @@ namespace TcUnit.TcUnit_Runner
             {
                 log.Error("ERROR: Visual studio solution " + VisualStudioSolutionFilePath + " does not exist!");
                 Environment.Exit(Constants.RETURN_VISUAL_STUDIO_SOLUTION_PATH_NOT_FOUND);
+            }
+
+            /* Start a timeout for the process if the user asked for it
+             */
+            if (Timeout != null)
+            {
+                log.Info($"Timeout enabled - process times out after {Timeout} minutes");
+                System.Timers.Timer timeout = new System.Timers.Timer(Int32.Parse(Timeout) * 1000 * 60);
+                timeout.Elapsed += KillProcess;
+                timeout.AutoReset = false;
+                timeout.Start();
             }
 
             LogBasicInfo();
@@ -271,6 +286,12 @@ namespace TcUnit.TcUnit_Runner
                     ITcSmTreeItem plcProject = automationInterface.PlcTreeItem.Child[i];
                     ITcPlcProject iecProject = (ITcPlcProject)plcProject;
                     iecProject.BootProjectAutostart = true;
+
+                    /* add the port that is used for this PLC to the AmsPorts list that
+                     * is later used to monitory the AdsState
+                     */
+                    string xmlString = plcProject.ProduceXml();
+                    AmsPorts.Add(XmlUtilities.AmsPort(xmlString));
                 }
                 System.Threading.Thread.Sleep(1000);
                 automationInterface.ActivateConfiguration();
@@ -293,6 +314,10 @@ namespace TcUnit.TcUnit_Runner
                 CleanUpAndExitApplication(Constants.RETURN_BUILD_ERROR);
             }
 
+            /* Establish a connection to the ADS router
+             */
+            TcAdsClient tcAdsClient = new TcAdsClient();
+
             /* Run TcUnit until the results have been returned */
             TcUnitResultCollector tcUnitResultCollector = new TcUnitResultCollector();
             ErrorList errorList = new ErrorList();
@@ -304,6 +329,31 @@ namespace TcUnit.TcUnit_Runner
             while (true)
             {
                 System.Threading.Thread.Sleep(10000);
+
+                /* Monitor the AdsState for each PLC that is used in the
+                 * solution. If we can't connect to the Ads Router, we just
+                 * carry on.
+                 */
+                try
+                {
+                    foreach (int amsPort in AmsPorts)
+                    {
+                        tcAdsClient.Connect(AmsNetId, amsPort);
+                        AdsState adsState = tcAdsClient.ReadState().AdsState;
+                        if (adsState != AdsState.Run)
+                        {
+                            log.Error($"ERROR: invalid AdsState {adsState} <> {AdsState.Run}. This could indicate a PLC Exception, terminating ...");
+                            Environment.Exit(Constants.RETURN_INVALID_ADSSTATE);
+                        }
+                        log.Debug($"DEBUG: AdsState={adsState}");
+                    }
+                }
+                catch (Exception ex)
+                { }
+                finally
+                {
+                    tcAdsClient.Disconnect();
+                }
 
                 errorItems = vsInstance.GetErrorItems();
                 log.Info("... got " + errorItems.Count + " report lines so far.");
@@ -351,6 +401,18 @@ namespace TcUnit.TcUnit_Runner
             Console.WriteLine();
             Console.WriteLine("Options:");
             p.WriteOptionDescriptions(Console.Out);
+        }
+
+        /// <summary>
+        /// Using the Timeout option the user may specify the longest time that the process 
+        /// of this application is allowed to run. Sometimes (on low RAM machines), the
+        /// DTE build process will hang and the only way to get out of this situation is
+        /// to kill the process.
+        /// </summary>
+        static private void KillProcess(Object source, System.Timers.ElapsedEventArgs e)
+        {
+            log.Error ("ERROR: timeout occured, killing process ...");
+            Environment.Exit(Constants.RETURN_TWINCAT_VERSION_NOT_FOUND);
         }
 
         /// <summary>

@@ -25,6 +25,8 @@ namespace TcUnit.TcUnit_Runner
         public const int RETURN_NOT_POSSIBLE_TO_PARSE_REAL_TIME_TASK_XML_DATA = 14;
         public const int RETURN_FAILED_FINDING_DEFINED_UNIT_TEST_TASK_IN_TWINCAT_PROJECT = 15;
         public const int RETURN_TASK_COUNT_NOT_EQUAL_TO_ONE = 16;
+        public const int RETURN_TIMEOUT = 17;
+        public const int RETURN_INVALID_ADSSTATE = 18;
 
 
         public const string XUNIT_RESULT_FILE_NAME = "TcUnit_xUnit_results.xml";
