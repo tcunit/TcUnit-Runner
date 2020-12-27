@@ -132,11 +132,15 @@ namespace TcUnit.TcUnit_Runner
             // Load the correct version of TwinCAT using the remote manager in the automation interface
             ITcRemoteManager remoteManager = dte.GetObject("TcRemoteManager");
 
-            string latestTcVersion = "";
+            var allTcVersions = new List<Version>();
+            Version latestTcVersion = null;
+   
             // Check if version is installed
             foreach (var possibleVersion in remoteManager.Versions)
             {
-                latestTcVersion = Char.ToString(possibleVersion[0]);
+                // Added installed TC versions to versions list
+                allTcVersions.Add(new Version(possibleVersion));
+
                 if (possibleVersion == this.tcVersion)
                 {
                     isVersionAvailable = true;
@@ -149,8 +153,18 @@ namespace TcUnit.TcUnit_Runner
                 }
             }
 
-            // If the version is pinned, check if the pinned version is available
-            if (isTwinCatVersionPinned && (String.IsNullOrEmpty(this.forceToThisTwinCatVersion)))
+            // Find latest installed TwinCAT version
+            for (int i = 0; i < allTcVersions.Count; i++)
+            {
+                if (!(latestTcVersion > allTcVersions[i]))
+                {
+                    latestTcVersion = allTcVersions[i];
+                    // Console.WriteLine(LatestTcVersion);
+                }
+            }
+
+                // If the version is pinned, check if the pinned version is available
+                if (isTwinCatVersionPinned && (String.IsNullOrEmpty(this.forceToThisTwinCatVersion)))
             {
                   if (isVersionAvailable)
                   {
@@ -183,9 +197,9 @@ namespace TcUnit.TcUnit_Runner
                 log.Error("The forced TwinCAT version " + this.forceToThisTwinCatVersion + " is not available");
                 throw new Exception("The forced TwinCAT version is not available");
             }
-            else if (latestTcVersion != "")
+            else if (latestTcVersion != null)
             {
-                remoteManager.Version = latestTcVersion;
+                remoteManager.Version = latestTcVersion.ToString();
             }
             else
             {
