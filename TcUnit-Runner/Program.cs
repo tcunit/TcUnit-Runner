@@ -7,6 +7,10 @@
 *    2.1. Find TwinCAT project in VS solution file
 *    2.2. Find which version of TwinCAT was used
 * 3. Load the VS DTE and TwinCAT XAE with the right version of TwinCAT using the remote manager
+*    The "right" version of TwinCAT is decided according to these rules:
+*    - If TwinCAT project version is forced (by -w argument to TcUnit-Runner), go with this version, otherwise...
+*    - If TwinCAT project is pinned, go with this version, otherwise...
+*    - Go with latest installed version of TwinCAT
 * 4. Load the solution
 * 5. Check that the solution has at least one PLC-project
 * 6. Clean the solution
