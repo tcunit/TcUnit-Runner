@@ -240,7 +240,7 @@ namespace TcUnit.TcUnit_Runner
                 /* Less ore more than one task, which is an error */
                 else
                 {
-                    log.Error("ERROR: The amount of tasks is not equal to 1 (one). Found " + realTimeTasksTreeItem.ChildCount.ToString() + " amount of tasks. Please provide which task is the TcUnit task");
+                    log.Error("ERROR: The number of tasks is not equal to 1 (one). Found " + realTimeTasksTreeItem.ChildCount.ToString() + " number of tasks. Please provide which task is the TcUnit task");
                     CleanUpAndExitApplication(Constants.RETURN_TASK_COUNT_NOT_EQUAL_TO_ONE);
                 }
             }
