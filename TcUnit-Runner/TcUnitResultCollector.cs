@@ -228,7 +228,7 @@ namespace TcUnit.TcUnit_Runner
                                 if (expectedErrorLogEntryType != ErrorLogEntryType.TEST_NAME)
                                     log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_NAME.ToString());
                                 else
-                                    log.Error("ERROR: While parsing TcUnit results, got test case number " + currentTestCaseInTestSuiteNumber + " but expected amount is " + testSuiteNumberOfTests);
+                                    log.Error("ERROR: While parsing TcUnit results, got test case number " + currentTestCaseInTestSuiteNumber + " but expected number is " + testSuiteNumberOfTests);
                                 return null;
                             }
                         }
