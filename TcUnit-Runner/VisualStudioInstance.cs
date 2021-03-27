@@ -194,7 +194,7 @@ namespace TcUnit.TcUnit_Runner
             }
             else
             {
-               log.Error("Error: It´s not possible to run TwinCAT in this configuration (TwinCAT-ForcedVersion / pinned TwinCAT Version / installed TwinCAT Version ");
+               log.Error("It´s not possible to run TwinCAT in this configuration (TwinCAT-ForcedVersion / pinned TwinCAT Version / installed TwinCAT Version ");
                throw new Exception("Wrong configuration for this TwinCAT version");
             }
 

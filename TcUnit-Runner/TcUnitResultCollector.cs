@@ -160,7 +160,7 @@ namespace TcUnit.TcUnit_Runner
                             }
                             else
                             {
-                                log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING.ToString());
+                                log.Error("While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING.ToString());
                                 return null;
                             }
                         }
@@ -205,7 +205,7 @@ namespace TcUnit.TcUnit_Runner
                             }
                             else
                             {
-                                log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_SUITE_STATISTICS.ToString());
+                                log.Error("While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_SUITE_STATISTICS.ToString());
                                 return null;
                             }
                         }
@@ -226,9 +226,9 @@ namespace TcUnit.TcUnit_Runner
                             else
                             {
                                 if (expectedErrorLogEntryType != ErrorLogEntryType.TEST_NAME)
-                                    log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_NAME.ToString());
+                                    log.Error("While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_NAME.ToString());
                                 else
-                                    log.Error("ERROR: While parsing TcUnit results, got test case number " + currentTestCaseInTestSuiteNumber + " but expected number is " + testSuiteNumberOfTests);
+                                    log.Error("While parsing TcUnit results, got test case number " + currentTestCaseInTestSuiteNumber + " but expected number is " + testSuiteNumberOfTests);
                                 return null;
                             }
                         }
@@ -247,7 +247,7 @@ namespace TcUnit.TcUnit_Runner
                             }
                             else
                             {
-                                log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_CLASS_NAME.ToString());
+                                log.Error("While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_CLASS_NAME.ToString());
                                 return null;
                             }
                         }
@@ -305,7 +305,7 @@ namespace TcUnit.TcUnit_Runner
                             }
                             else
                             {
-                                log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_STATUS_AND_NUMBER_OF_ASSERTS.ToString());
+                                log.Error("While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_STATUS_AND_NUMBER_OF_ASSERTS.ToString());
                                 return null;
                             }
                         }
@@ -325,7 +325,7 @@ namespace TcUnit.TcUnit_Runner
                             }
                             else
                             {
-                                log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_ASSERT_MESSAGE.ToString());
+                                log.Error("While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_ASSERT_MESSAGE.ToString());
                                 return null;
                             }
                         }
@@ -377,7 +377,7 @@ namespace TcUnit.TcUnit_Runner
                             }
                             else
                             {
-                                log.Error("ERROR: While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_ASSERT_TYPE.ToString());
+                                log.Error("While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_ASSERT_TYPE.ToString());
                                 return null;
                             }
                         }

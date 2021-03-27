@@ -37,6 +37,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.XPath;
 using TCatSysManagerLib;
 using TwinCAT.Ads;
 
@@ -58,6 +60,7 @@ namespace TcUnit.TcUnit_Runner
         static void Main(string[] args)
         {
             bool showHelp = false;
+            bool enableDebugLoggingLevel = false;
             Console.CancelKeyPress += new ConsoleCancelEventHandler(CancelKeyPressHandler);
             log4net.GlobalContext.Properties["LogLocation"] = AppDomain.CurrentDomain.BaseDirectory + "\\logs";
             log4net.Config.XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(AppDomain.CurrentDomain.BaseDirectory + "log4net.config"));
@@ -68,10 +71,12 @@ namespace TcUnit.TcUnit_Runner
                 .Add("a=|AmsNetId=", "[OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run", a => AmsNetId = a)
                 .Add("w=|TcVersion=", "[OPTIONAL] The TwinCAT version to be used to load the TwinCAT project", w => ForceToThisTwinCATVersion = w)
                 .Add("u=|Timeout=", "[OPTIONAL] Timeout the process with an error after X minutes", u => Timeout = u)
+                .Add("d|debug", "[OPTIONAL] Increase debug message verbosity", d => enableDebugLoggingLevel = d != null)
                 .Add("?|h|help", h => showHelp = h != null);
             try
             {
                 options.Parse(args);
+
             }
             catch (OptionException e)
             {
@@ -87,18 +92,41 @@ namespace TcUnit.TcUnit_Runner
                 Environment.Exit(Constants.RETURN_SUCCESSFULL);
             }
 
+            /* Set logging level.
+             * This is handled by changing the log4net.config file on the fly.
+             * The following levels are defined in order of increasing priority:
+             * - ALL
+             * - DEBUG
+             * - INFO
+             * - WARN
+             * - ERROR
+             * - FATAL
+             * - OFF
+            */
+            XmlDocument doc = new XmlDocument();
+            doc.Load(AppDomain.CurrentDomain.BaseDirectory + "log4net.config");
+            XmlNode root = doc.DocumentElement;
+            XmlNode subNode1 = root.SelectSingleNode("root");
+            XmlNode nodeForModify = subNode1.SelectSingleNode("level");
+            if (enableDebugLoggingLevel)
+                nodeForModify.Attributes[0].Value = "DEBUG";
+            else
+                nodeForModify.Attributes[0].Value = "INFO";
+            doc.Save(AppDomain.CurrentDomain.BaseDirectory + "log4net.config");
+            System.Threading.Thread.Sleep(500); // A tiny sleep just to make sure that log4net manages to detect the change in the file
+
             /* Make sure the user has supplied the path for the Visual Studio solution file.
              * Also verify that this file exists.
              */
             if (VisualStudioSolutionFilePath == null)
             {
-                log.Error("ERROR: Visual studio solution path not provided!");
+                log.Error("Visual studio solution path not provided!");
                 Environment.Exit(Constants.RETURN_VISUAL_STUDIO_SOLUTION_PATH_NOT_PROVIDED);
             }
 
             if (!File.Exists(VisualStudioSolutionFilePath))
             {
-                log.Error("ERROR: Visual studio solution " + VisualStudioSolutionFilePath + " does not exist!");
+                log.Error("Visual studio solution " + VisualStudioSolutionFilePath + " does not exist!");
                 Environment.Exit(Constants.RETURN_VISUAL_STUDIO_SOLUTION_PATH_NOT_FOUND);
             }
 
@@ -120,13 +148,13 @@ namespace TcUnit.TcUnit_Runner
             TwinCATProjectFilePath = TcFileUtilities.FindTwinCATProjectFile(VisualStudioSolutionFilePath);
             if (String.IsNullOrEmpty(TwinCATProjectFilePath))
             {
-                log.Error("ERROR: Did not find TwinCAT project file in solution. Is this a TwinCAT project?");
+                log.Error("Did not find TwinCAT project file in solution. Is this a TwinCAT project?");
                 Environment.Exit(Constants.RETURN_TWINCAT_PROJECT_FILE_NOT_FOUND);
             }
 
             if (!File.Exists(TwinCATProjectFilePath))
             {
-                log.Error("ERROR : TwinCAT project file " + TwinCATProjectFilePath + " does not exist!");
+                log.Error("TwinCAT project file " + TwinCATProjectFilePath + " does not exist!");
                 Environment.Exit(Constants.RETURN_TWINCAT_PROJECT_FILE_NOT_FOUND);
             }
 
@@ -134,7 +162,7 @@ namespace TcUnit.TcUnit_Runner
 
             if (String.IsNullOrEmpty(tcVersion))
             {
-                log.Error("ERROR: Did not find TwinCAT version in TwinCAT project file path");
+                log.Error("Did not find TwinCAT version in TwinCAT project file path");
                 Environment.Exit(Constants.RETURN_TWINCAT_VERSION_NOT_FOUND);
             }
 
@@ -147,7 +175,7 @@ namespace TcUnit.TcUnit_Runner
             }
             catch
             {
-                log.Error("ERROR: Error loading VS DTE. Is the correct version of Visual Studio and TwinCAT installed? Is the TcUnit-Runner running with administrator privileges?");
+                log.Error("Error loading VS DTE. Is the correct version of Visual Studio and TwinCAT installed? Is the TcUnit-Runner running with administrator privileges?");
                 CleanUpAndExitApplication(Constants.RETURN_ERROR_LOADING_VISUAL_STUDIO_DTE);
             }
        
@@ -157,13 +185,13 @@ namespace TcUnit.TcUnit_Runner
             }
             catch
             {
-                log.Error("ERROR: Error loading the solution. Try to open it manually and make sure it's possible to open and that all dependencies are working");
+                log.Error("Error loading the solution. Try to open it manually and make sure it's possible to open and that all dependencies are working");
                 CleanUpAndExitApplication(Constants.RETURN_ERROR_LOADING_VISUAL_STUDIO_SOLUTION);
             }
 
             if (vsInstance.GetVisualStudioVersion() == null)
             {
-                log.Error("ERROR: Did not find Visual Studio version in Visual Studio solution file");
+                log.Error("Did not find Visual Studio version in Visual Studio solution file");
                 CleanUpAndExitApplication(Constants.RETURN_ERROR_FINDING_VISUAL_STUDIO_SOLUTION_VERSION);
             }
 
@@ -171,7 +199,7 @@ namespace TcUnit.TcUnit_Runner
             AutomationInterface automationInterface = new AutomationInterface(vsInstance.GetProject());
             if (automationInterface.PlcTreeItem.ChildCount <= 0)
             {
-                log.Error("ERROR: No PLC-project exists in TwinCAT project");
+                log.Error("No PLC-project exists in TwinCAT project");
                 CleanUpAndExitApplication(Constants.RETURN_NO_PLC_PROJECT_IN_TWINCAT_PROJECT);
             }
             
@@ -207,14 +235,14 @@ namespace TcUnit.TcUnit_Runner
                     }
                     catch
                     {
-                        log.Error("ERROR: Could not parse real time task XML data");
+                        log.Error("Could not parse real time task XML data");
                         CleanUpAndExitApplication(Constants.RETURN_NOT_POSSIBLE_TO_PARSE_REAL_TIME_TASK_XML_DATA);
                     }
                 }
 
                 if (!foundTcUnitTaskName)
                 {
-                    log.Error("ERROR: Could not find task '" + TcUnitTaskName + "' in TwinCAT project");
+                    log.Error("Could not find task '" + TcUnitTaskName + "' in TwinCAT project");
                     CleanUpAndExitApplication(Constants.RETURN_FAILED_FINDING_DEFINED_UNIT_TEST_TASK_IN_TWINCAT_PROJECT);
                 }
             }
@@ -240,7 +268,7 @@ namespace TcUnit.TcUnit_Runner
                 /* Less ore more than one task, which is an error */
                 else
                 {
-                    log.Error("ERROR: The number of tasks is not equal to 1 (one). Found " + realTimeTasksTreeItem.ChildCount.ToString() + " number of tasks. Please provide which task is the TcUnit task");
+                    log.Error("The number of tasks is not equal to 1 (one). Found " + realTimeTasksTreeItem.ChildCount.ToString() + " number of tasks. Please provide which task is the TcUnit task");
                     CleanUpAndExitApplication(Constants.RETURN_TASK_COUNT_NOT_EQUAL_TO_ONE);
                 }
             }
@@ -315,7 +343,7 @@ namespace TcUnit.TcUnit_Runner
             }
             else
             {
-                log.Error("ERROR: Build errors in project");
+                log.Error("Build errors in project");
                 CleanUpAndExitApplication(Constants.RETURN_BUILD_ERROR);
             }
 
@@ -347,7 +375,7 @@ namespace TcUnit.TcUnit_Runner
                         AdsState adsState = tcAdsClient.ReadState().AdsState;
                         if (adsState != AdsState.Run)
                         {
-                            log.Error("ERROR: invalid AdsState "+adsState +"<>" +AdsState.Run +". This could indicate a PLC Exception, terminating ...");
+                            log.Error("Invalid AdsState "+adsState +"<>" +AdsState.Run +". This could indicate a PLC Exception, terminating ...");
                             Environment.Exit(Constants.RETURN_INVALID_ADSSTATE);
                         }
                     }
@@ -360,6 +388,16 @@ namespace TcUnit.TcUnit_Runner
                 }
 
                 errorItems = vsInstance.GetErrorItems();
+
+                var newErrors = errorList.AddNew(errorItems);
+                if (log.IsDebugEnabled)
+                {
+                    foreach (var error in newErrors)
+                    {
+                        log.Debug(error.ErrorLevel + ": " + error.Description);
+                    }
+                }
+
                 log.Info("... got " + errorItems.Count + " report lines so far.");
                 if (tcUnitResultCollector.AreResultsAvailable(errorItems))
                 {
@@ -373,7 +411,6 @@ namespace TcUnit.TcUnit_Runner
 
             }
 
-            var newErrors = errorList.AddNew(errorItems);
             List<ErrorList.Error> errors = new List<ErrorList.Error>(errorList.Where(e => (e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelHigh || e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelLow)));
             List<ErrorList.Error> errorsSorted = errors.OrderBy(o => o.Description).ToList();
 
@@ -416,7 +453,7 @@ namespace TcUnit.TcUnit_Runner
         /// </summary>
         static private void KillProcess(Object source, System.Timers.ElapsedEventArgs e)
         {
-            log.Error ("ERROR: timeout occured, killing process(es) ...");
+            log.Error("Timeout occured, killing process(es) ...");
             CleanUpAndExitApplication(Constants.RETURN_TIMEOUT);
         }
 
