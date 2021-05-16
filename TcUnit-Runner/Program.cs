@@ -28,17 +28,13 @@
 
 using EnvDTE80;
 using log4net;
-using log4net.Config;
 using NDesk.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.XPath;
 using TCatSysManagerLib;
 using TwinCAT.Ads;
 
@@ -85,7 +81,7 @@ namespace TcUnit.TcUnit_Runner
                 Environment.Exit(Constants.RETURN_ARGUMENT_ERROR);
             }
 
-            
+
             if (showHelp)
             {
                 DisplayHelp(options);
@@ -136,7 +132,7 @@ namespace TcUnit.TcUnit_Runner
              */
             if (Timeout != null)
             {
-                log.Info("Timeout enabled - process(es) timesout after " +Timeout  +" minute(s)");
+                log.Info("Timeout enabled - process(es) timesout after " + Timeout + " minute(s)");
                 System.Timers.Timer timeout = new System.Timers.Timer(Int32.Parse(Timeout) * 1000 * 60);
                 timeout.Elapsed += KillProcess;
                 timeout.AutoReset = false;
@@ -178,7 +174,7 @@ namespace TcUnit.TcUnit_Runner
                 log.Error("Error loading VS DTE. Is the correct version of Visual Studio and TwinCAT installed? Is the TcUnit-Runner running with administrator privileges?");
                 CleanUpAndExitApplication(Constants.RETURN_ERROR_LOADING_VISUAL_STUDIO_DTE);
             }
-       
+
             try
             {
                 vsInstance.LoadSolution();
@@ -202,7 +198,7 @@ namespace TcUnit.TcUnit_Runner
                 log.Error("No PLC-project exists in TwinCAT project");
                 CleanUpAndExitApplication(Constants.RETURN_NO_PLC_PROJECT_IN_TWINCAT_PROJECT);
             }
-            
+
 
             ITcSmTreeItem realTimeTasksTreeItem = automationInterface.RealTimeTasksTreeItem;
             /* Task name provided */
@@ -310,7 +306,7 @@ namespace TcUnit.TcUnit_Runner
                 if (String.IsNullOrEmpty(AmsNetId))
                     AmsNetId = Constants.LOCAL_AMS_NET_ID;
 
-                log.Info("Setting target NetId to '" +AmsNetId +"'");
+                log.Info("Setting target NetId to '" + AmsNetId + "'");
                 automationInterface.ITcSysManager.SetTargetNetId(AmsNetId);
                 log.Info("Enabling boot project and setting BootProjectAutostart on " + automationInterface.ITcSysManager.GetTargetNetId());
 
@@ -356,7 +352,7 @@ namespace TcUnit.TcUnit_Runner
             ErrorList errorList = new ErrorList();
 
             log.Info("Waiting for results from TcUnit...");
-            
+
             ErrorItems errorItems;
 
             while (true)
@@ -375,7 +371,7 @@ namespace TcUnit.TcUnit_Runner
                         AdsState adsState = tcAdsClient.ReadState().AdsState;
                         if (adsState != AdsState.Run)
                         {
-                            log.Error("Invalid AdsState "+adsState +"<>" +AdsState.Run +". This could indicate a PLC Exception, terminating ...");
+                            log.Error("Invalid AdsState " + adsState + "<>" + AdsState.Run + ". This could indicate a PLC Exception, terminating ...");
                             Environment.Exit(Constants.RETURN_INVALID_ADSSTATE);
                         }
                     }
@@ -418,17 +414,26 @@ namespace TcUnit.TcUnit_Runner
             TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errorsSorted, TcUnitTaskName);
 
             /* Write xUnit XML report */
-            if (testResult != null)
+            if (testResult == null)
             {
-                // No need to check if file (VisualStudioSolutionFilePath) exists, as this has already been done
-                string VisualStudioSolutionDirectoryPath = Path.GetDirectoryName(VisualStudioSolutionFilePath);
-                string XUnitReportFilePath = VisualStudioSolutionDirectoryPath + "\\" + Constants.XUNIT_RESULT_FILE_NAME;
-                log.Info("Writing xUnit XML file to " + XUnitReportFilePath);
-                // Overwrites all existing content (if existing)
-                XunitXmlCreator.WriteXml(testResult, XUnitReportFilePath);
+                log.Error("No test results parsed from events (error list).");
+                CleanUpAndExitApplication(Constants.RETURN_ERROR_NO_TEST_RESULTS);
             }
 
-            CleanUpAndExitApplication(Constants.RETURN_SUCCESSFULL);
+            // No need to check if file (VisualStudioSolutionFilePath) exists, as this has already been done
+            string VisualStudioSolutionDirectoryPath = Path.GetDirectoryName(VisualStudioSolutionFilePath);
+            string XUnitReportFilePath = VisualStudioSolutionDirectoryPath + "\\" + Constants.XUNIT_RESULT_FILE_NAME;
+            log.Info("Writing xUnit XML file to " + XUnitReportFilePath);
+            // Overwrites all existing content (if existing)
+            XunitXmlCreator.WriteXml(testResult, XUnitReportFilePath);
+
+            log.Info(testResult.PrintTestResults());
+
+            if (testResult.AllTestsPassed)
+                CleanUpAndExitApplication(Constants.RETURN_SUCCESSFULL);
+            else
+                CleanUpAndExitApplication(Constants.RETURN_TESTS_FAILED);
+
         }
 
         static void DisplayHelp(OptionSet p)

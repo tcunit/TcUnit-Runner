@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace TcUnit.TcUnit_Runner
 {
@@ -45,7 +42,7 @@ namespace TcUnit.TcUnit_Runner
             ULINT,
             USINT,
             WORD,
-    
+
             /* Array types */
             Array2D_LREAL,
             Array2D_REAL,
@@ -76,6 +73,7 @@ namespace TcUnit.TcUnit_Runner
             public string FailureMessage;
             public string AssertType;
             public uint NumberOfAsserts;
+            public bool WasSuccessful;
             public TestCaseResult(string testName, string testClassName, string testStatus, string failureMessage, string assertType, uint numberOfAsserts)
             {
                 TestName = testName;
@@ -84,6 +82,7 @@ namespace TcUnit.TcUnit_Runner
                 FailureMessage = failureMessage;
                 AssertType = assertType;
                 NumberOfAsserts = numberOfAsserts;
+                WasSuccessful = !string.IsNullOrEmpty(testStatus) && string.Equals(testStatus, "PASS", System.StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -117,7 +116,7 @@ namespace TcUnit.TcUnit_Runner
             _numberOfSuccessfulTestCases = numberOfSuccessfulTestCases;
             _numberOfFailedTestCases = numberOfFailedTestCases;
         }
-        
+
         IEnumerator<TestSuiteResult> IEnumerable<TestSuiteResult>.GetEnumerator()
         {
             return _testSuiteResults.GetEnumerator();
@@ -137,15 +136,36 @@ namespace TcUnit.TcUnit_Runner
         {
             return _numberOfTestCases;
         }
-        
+
         public uint GetNumberOfSuccessfulTestCases()
         {
             return _numberOfSuccessfulTestCases;
         }
-        
+
         public uint GetNumberOfFailedTestCases()
         {
             return _numberOfFailedTestCases;
+        }
+
+        public bool AllTestsPassed => GetNumberOfTestSuites() > 0 && GetNumberOfTestCases() > 0 && GetNumberOfFailedTestCases() == 0;
+
+        public string PrintTestResults()
+        {
+            var builder = new StringBuilder((int)(_numberOfTestSuites * _numberOfTestCases * 100));
+            builder.Append("\r\n");
+            builder.Append($"Testresults for {_numberOfTestSuites} Testsuite(s) with total {_numberOfTestCases} Testcase(s):\r\n");
+            foreach (var suite in _testSuiteResults)
+            {
+                builder.Append($"ID={suite.Identity}, Name=\"{suite.Name}\": Tests={suite.NumberOfTests}, Failures={suite.NumberOfFailedTests}.\r\n");
+                foreach (var testCaseResult in suite.TestCaseResults)
+                {
+                    builder.Append($"\tTestcase \"{testCaseResult.TestName}\", Assertions={testCaseResult.NumberOfAsserts}, ClassName=\"{testCaseResult.TestClassName}\", Status=\"{testCaseResult.TestStatus}\"");
+                    builder.Append(testCaseResult.WasSuccessful ? ".\r\n" : $" Message=\"{testCaseResult.FailureMessage}\", Type=\"{testCaseResult.AssertType}\".\r\n");
+                   
+                }
+            }
+
+            return builder.ToString();
         }
     }
 }
