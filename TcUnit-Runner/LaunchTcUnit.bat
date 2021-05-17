@@ -22,8 +22,9 @@ SET TCUNIT_TASK_NAME=
 SET TCUNIT_AMSNETID=
 SET TCUNIT_TCVERSION_TO_USE=
 SET TCUNIT_TIMEOUT=
+SET TCUNIT_VARIANT=
 
-CALL :Process_Parameters %1, %2, %3, %4, %5, %6, %7, %8
+CALL :Process_Parameters %*
 
 rem Create parameter call to TcUnit-Runner
 SET TCUNIT_RUNNER_PARAMETERS=
@@ -38,6 +39,9 @@ IF DEFINED TCUNIT_TCVERSION_TO_USE (
 )
 IF DEFINED TCUNIT_TIMEOUT (
     SET TCUNIT_RUNNER_PARAMETERS=%TCUNIT_RUNNER_PARAMETERS% --Timeout=%TCUNIT_TIMEOUT%
+)
+IF DEFINED TCUNIT_VARIANT (
+    SET TCUNIT_RUNNER_PARAMETERS=%TCUNIT_RUNNER_PARAMETERS% --Variant=%TCUNIT_VARIANT%
 )
 
 SET TCUNIT_RUNNER_EXECUTABLE_COMPLETE_PATH=%TCUNIT_RUNNER_INSTALL_DIRECTORY%\TcUnit-Runner.exe
@@ -72,6 +76,11 @@ IF NOT DEFINED TCUNIT_TIMEOUT (
     echo Timeout has been provided, using [min]: %TCUNIT_TIMEOUT%
 )
 
+IF NOT DEFINED TCUNIT_VARIANT (
+    echo Variant not provided.
+) ELSE (
+    echo Variant has been provided: %TCUNIT_VARIANT%
+)
 
 rem Find the visual studio solution file.
 FOR /r %%i IN (*.sln) DO (
@@ -98,111 +107,69 @@ EXIT /B %errorlevel%
 rem This function process the parameters 
 :Process_Parameters
 
-rem First parameter
-IF "%~1" == "-t" (
-    SET TCUNIT_TASK_NAME=%2
-)
-IF "%~1" == "-T" (
-    SET TCUNIT_TASK_NAME=%2
-)
-IF "%~1" == "-a" (
-    SET TCUNIT_AMSNETID=%2
-)
-IF "%~1" == "-A" (
-    SET TCUNIT_AMSNETID=%2
-)
-IF "%~1" == "-w" (
-    SET TCUNIT_TCVERSION_TO_USE=%2
-)
-IF "%~1" == "-W" (
-    SET TCUNIT_TCVERSION_TO_USE=%2
-)
-IF "%~1" == "-u" (
-    SET TCUNIT_TIMEOUT=%2
-)
-IF "%~1" == "-U" (
-    SET TCUNIT_TIMEOUT=%2
-)
-
-rem Second parameter
-IF "%~3" == "-t" (
-    SET TCUNIT_TASK_NAME=%4
-)
-IF "%~3" == "-T" (
-    SET TCUNIT_TASK_NAME=%4
-)
-IF "%~3" == "-a" (
-    SET TCUNIT_AMSNETID=%4
-)
-IF "%~3" == "-A" (
-    SET TCUNIT_AMSNETID=%4
-)
-IF "%~3" == "-w" (
-    SET TCUNIT_TCVERSION_TO_USE=%4
-)
-IF "%~3" == "-W" (
-    SET TCUNIT_TCVERSION_TO_USE=%4
-)
-IF "%~3" == "-u" (
-    SET TCUNIT_TIMEOUT=%4
-)
-IF "%~3" == "-U" (
-    SET TCUNIT_TIMEOUT=%4
-)
-
-rem Third parameter
-IF "%~5" == "-t" (
-    SET TCUNIT_TASK_NAME=%6
-)
-IF "%~5" == "-T" (
-    SET TCUNIT_TASK_NAME=%6
-)
-IF "%~5" == "-a" (
-    SET TCUNIT_AMSNETID=%6
-)
-IF "%~5" == "-A" (
-    SET TCUNIT_AMSNETID=%6
-)
-IF "%~5" == "-w" (
-    SET TCUNIT_TCVERSION_TO_USE=%6
-)
-IF "%~5" == "-W" (
-    SET TCUNIT_TCVERSION_TO_USE=%6
-)
-IF "%~5" == "-u" (
-    SET TCUNIT_TIMEOUT=%6
-)
-IF "%~5" == "-U" (
-    SET TCUNIT_TIMEOUT=%6
+rem flag exists
+IF NOT [%1]==[] (
+	rem parameter exists
+	IF NOT [%2]==[] (
+		rem store parameter
+		IF "%~1" == "-t" (
+			SET TCUNIT_TASK_NAME=%2
+			SHIFT & SHIFT
+			GOTO :Process_Parameters
+		)
+		IF "%~1" == "-T" (
+			SET TCUNIT_TASK_NAME=%2
+			SHIFT & SHIFT
+			GOTO :Process_Parameters
+		)
+		IF "%~1" == "-a" (
+			SET TCUNIT_AMSNETID=%2
+			SHIFT & SHIFT
+			GOTO :Process_Parameters
+		)
+		IF "%~1" == "-A" (
+			SET TCUNIT_AMSNETID=%2
+			SHIFT & SHIFT
+			GOTO :Process_Parameters
+		)
+		IF "%~1" == "-w" (
+			SET TCUNIT_TCVERSION_TO_USE=%2
+			SHIFT & SHIFT
+			GOTO :Process_Parameters
+		)
+		IF "%~1" == "-W" (
+			SET TCUNIT_TCVERSION_TO_USE=%2
+			SHIFT & SHIFT
+			GOTO :Process_Parameters
+		)
+		IF "%~1" == "-u" (
+			SET TCUNIT_TIMEOUT=%2
+			SHIFT & SHIFT
+			GOTO :Process_Parameters
+		)
+		IF "%~1" == "-U" (
+			SET TCUNIT_TIMEOUT=%2
+			SHIFT & SHIFT
+			GOTO :Process_Parameters
+		)
+		IF "%~1" == "-r" (
+			SET TCUNIT_VARIANT=%2
+			SHIFT & SHIFT
+			GOTO :Process_Parameters
+		)
+		IF "%~1" == "-R" (
+			SET TCUNIT_VARIANT=%2
+			SHIFT & SHIFT
+			GOTO :Process_Parameters
+		)
+		
+		rem No flag found, ignore and try next parameter
+		SHIFT
+		GOTO :Process_Parameters
+	)
 )
 
-rem Fourth parameter
-IF "%~7" == "-t" (
-    SET TCUNIT_TASK_NAME=%8
-)
-IF "%~7" == "-T" (
-    SET TCUNIT_TASK_NAME=%8
-)
-IF "%~7" == "-a" (
-    SET TCUNIT_AMSNETID=%8
-)
-IF "%~7" == "-A" (
-    SET TCUNIT_AMSNETID=%8
-)
-IF "%~7" == "-w" (
-    SET TCUNIT_TCVERSION_TO_USE=%8
-)
-IF "%~7" == "-W" (
-    SET TCUNIT_TCVERSION_TO_USE=%8
-)
-IF "%~7" == "-u" (
-    SET TCUNIT_TIMEOUT=%8
-)
-IF "%~7" == "-U" (
-    SET TCUNIT_TIMEOUT=%8
-)
-
-
+rem no parameter pairs anymore => return
 GOTO:EOF
 
 :Exit

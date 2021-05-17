@@ -14,16 +14,17 @@
 * 4. Load the solution
 * 5. Check that the solution has at least one PLC-project
 * 6. Clean the solution
-* 7. Build the solution. Make sure that build was successful.
-* 8. Set target NetId to 127.0.0.1.1.1
-* 9. If user has provided 'TcUnitTaskName', iterate all PLC projects and do:
-*     9.1. Find the 'TcUnitTaskName', and set the <AutoStart> to TRUE and <Disabled> to FALSE for the TIRT^ of the TASK
-*     9.2. Iterate the rest of the tasks (if there are any), and set the <AutoStart> to FALSE and <Disabled> to TRUE for the TIRT^ of the task
-* 10. Enable boot project autostart for all PLC projects
-* 11. Activate configuration
-* 12. Restart TwinCAT
-* 13. Wait until TcUnit has reported all results and collect all results
-* 14. Write all results to xUnit compatible XML-file
+* 7. Set variant if provided
+* 8. Build the solution. Make sure that build was successful.
+* 9. Set target NetId to 127.0.0.1.1.1
+* 10. If user has provided 'TcUnitTaskName', iterate all PLC projects and do:
+*     10.1. Find the 'TcUnitTaskName', and set the <AutoStart> to TRUE and <Disabled> to FALSE for the TIRT^ of the TASK
+*     10.2. Iterate the rest of the tasks (if there are any), and set the <AutoStart> to FALSE and <Disabled> to TRUE for the TIRT^ of the task
+* 11. Enable boot project autostart for all PLC projects
+* 12. Activate configuration
+* 13. Restart TwinCAT
+* 14. Wait until TcUnit has reported all results and collect all results
+* 15. Write all results to xUnit compatible XML-file
 */
 
 using EnvDTE80;
@@ -49,6 +50,7 @@ namespace TcUnit.TcUnit_Runner
         private static string VisualStudioSolutionFilePath = null;
         private static string TwinCATProjectFilePath = null;
         private static string TcUnitTaskName = null;
+        private static string Variant = null;
         private static string ForceToThisTwinCATVersion = null;
         private static string AmsNetId = null;
         private static List<int> AmsPorts = new List<int>();
@@ -68,6 +70,7 @@ namespace TcUnit.TcUnit_Runner
             OptionSet options = new OptionSet()
                 .Add("v=|VisualStudioSolutionFilePath=", "The full path to the TwinCAT project (sln-file)", v => VisualStudioSolutionFilePath = v)
                 .Add("t=|TcUnitTaskName=", "[OPTIONAL] The name of the task running TcUnit defined under \"Tasks\"", t => TcUnitTaskName = t)
+                .Add("r=|Variant=", "[OPTIONAL] The name of the variant to use.", var => Variant = var)
                 .Add("a=|AmsNetId=", "[OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run", a => AmsNetId = a)
                 .Add("w=|TcVersion=", "[OPTIONAL] The TwinCAT version to be used to load the TwinCAT project", w => ForceToThisTwinCATVersion = w)
                 .Add("u=|Timeout=", "[OPTIONAL] Timeout the process with an error after X minutes", u => Timeout = u)
@@ -270,6 +273,22 @@ namespace TcUnit.TcUnit_Runner
                 {
                     log.Error("The number of tasks is not equal to 1 (one). Found " + realTimeTasksTreeItem.ChildCount.ToString() + " number of tasks. Please provide which task is the TcUnit task");
                     CleanUpAndExitApplication(Constants.RETURN_TASK_COUNT_NOT_EQUAL_TO_ONE);
+                }
+            }
+
+            /* Select variant if provided as parameter
+             */
+            if (!String.IsNullOrEmpty(Variant))
+            {
+                try
+                {
+                    automationInterface.ITcSysManager.CurrentProjectVariant = Variant;
+                    log.Info("Variant selected with name: " + Variant);
+                }
+                catch
+                {
+                    log.Error("Unable to set variant: " + Variant + ". Please provide an existing variant from the project.");
+                    CleanUpAndExitApplication(Constants.RETURN_INVALID_VARIANT);
                 }
             }
 
