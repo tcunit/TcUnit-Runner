@@ -413,6 +413,9 @@ namespace TcUnit.TcUnit_Runner
             /* Parse all events (from the error list) from Visual Studio and store the results */
             TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errorsSorted, TcUnitTaskName);
 
+            /* Print results to logger */
+            log.Info(testResult.PrintTestResults());
+
             /* Write xUnit XML report */
             if (testResult == null)
             {
@@ -426,8 +429,6 @@ namespace TcUnit.TcUnit_Runner
             log.Info("Writing xUnit XML file to " + XUnitReportFilePath);
             // Overwrites all existing content (if existing)
             XunitXmlCreator.WriteXml(testResult, XUnitReportFilePath);
-
-            log.Info(testResult.PrintTestResults());
 
             if (testResult.GetAllTestsPassed())
                 CleanUpAndExitApplication(Constants.RETURN_SUCCESSFULL);

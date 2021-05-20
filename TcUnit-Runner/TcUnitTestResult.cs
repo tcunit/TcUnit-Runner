@@ -158,16 +158,16 @@ namespace TcUnit.TcUnit_Runner
         {
             var builder = new StringBuilder((int)(_numberOfTestSuites * _numberOfTestCases * 100));
             builder.Append("\r\n");
-            builder.Append(string.Format(" huhu Testresults for {0} Testsuite(s) with total {1} Testcase(s):\r\n", _numberOfTestSuites, _numberOfTestCases));
+            builder.Append(string.Format("Test results for {0} test suite(s) with total {1} test(s):\r\n", _numberOfTestSuites, _numberOfTestCases));
             foreach (var suite in _testSuiteResults)
             {
                 builder.Append(string.Format("ID={0}, Name=\"{1}\": Tests={2}, Failures={3}.\r\n", suite.Identity, suite.Name, suite.NumberOfTests, suite.NumberOfFailedTests));
 
                 foreach (var testCaseResult in suite.TestCaseResults)
                 {
-                    builder.Append(string.Format("\tTestcase \"{0}\", Assertions={1}, ClassName=\"{2}\", Status=\"{3}\"", testCaseResult.TestName, testCaseResult.NumberOfAsserts, testCaseResult.TestClassName, testCaseResult.TestStatus));
+                    builder.Append(string.Format("\tTest case \"{0}\", Assertions={1}, ClassName=\"{2}\", Status=\"{3}\"", testCaseResult.TestName, testCaseResult.NumberOfAsserts, testCaseResult.TestClassName, testCaseResult.TestStatus));
                     builder.Append(testCaseResult.WasSuccessful ? ".\r\n" :
-                        string.Format(" Message=\"{0}\", Type=\"{1}\".\r\n", testCaseResult.FailureMessage, testCaseResult.AssertType));
+                        string.Format(", Message=\"{0}\", Type=\"{1}\".\r\n", testCaseResult.FailureMessage, testCaseResult.AssertType));
                 }
             }
 
