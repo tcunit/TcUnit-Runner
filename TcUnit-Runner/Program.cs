@@ -429,7 +429,7 @@ namespace TcUnit.TcUnit_Runner
 
             log.Info(testResult.PrintTestResults());
 
-            if (testResult.AllTestsPassed)
+            if (testResult.GetAllTestsPassed())
                 CleanUpAndExitApplication(Constants.RETURN_SUCCESSFULL);
             else
                 CleanUpAndExitApplication(Constants.RETURN_TESTS_FAILED);

@@ -147,21 +147,27 @@ namespace TcUnit.TcUnit_Runner
             return _numberOfFailedTestCases;
         }
 
-        public bool AllTestsPassed => GetNumberOfTestSuites() > 0 && GetNumberOfTestCases() > 0 && GetNumberOfFailedTestCases() == 0;
+        public bool GetAllTestsPassed()
+        {
+            return GetNumberOfTestSuites() > 0 &&
+                GetNumberOfTestCases() > 0 &&
+                GetNumberOfFailedTestCases() == 0;
+        }
 
         public string PrintTestResults()
         {
             var builder = new StringBuilder((int)(_numberOfTestSuites * _numberOfTestCases * 100));
             builder.Append("\r\n");
-            builder.Append($"Testresults for {_numberOfTestSuites} Testsuite(s) with total {_numberOfTestCases} Testcase(s):\r\n");
+            builder.Append(string.Format(" huhu Testresults for {0} Testsuite(s) with total {1} Testcase(s):\r\n", _numberOfTestSuites, _numberOfTestCases));
             foreach (var suite in _testSuiteResults)
             {
-                builder.Append($"ID={suite.Identity}, Name=\"{suite.Name}\": Tests={suite.NumberOfTests}, Failures={suite.NumberOfFailedTests}.\r\n");
+                builder.Append(string.Format("ID={0}, Name=\"{1}\": Tests={2}, Failures={3}.\r\n", suite.Identity, suite.Name, suite.NumberOfTests, suite.NumberOfFailedTests));
+
                 foreach (var testCaseResult in suite.TestCaseResults)
                 {
-                    builder.Append($"\tTestcase \"{testCaseResult.TestName}\", Assertions={testCaseResult.NumberOfAsserts}, ClassName=\"{testCaseResult.TestClassName}\", Status=\"{testCaseResult.TestStatus}\"");
-                    builder.Append(testCaseResult.WasSuccessful ? ".\r\n" : $" Message=\"{testCaseResult.FailureMessage}\", Type=\"{testCaseResult.AssertType}\".\r\n");
-                   
+                    builder.Append(string.Format("\tTestcase \"{0}\", Assertions={1}, ClassName=\"{2}\", Status=\"{3}\"", testCaseResult.TestName, testCaseResult.NumberOfAsserts, testCaseResult.TestClassName, testCaseResult.TestStatus));
+                    builder.Append(testCaseResult.WasSuccessful ? ".\r\n" :
+                        string.Format(" Message=\"{0}\", Type=\"{1}\".\r\n", testCaseResult.FailureMessage, testCaseResult.AssertType));
                 }
             }
 
