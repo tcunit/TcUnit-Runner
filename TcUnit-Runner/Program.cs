@@ -280,15 +280,25 @@ namespace TcUnit.TcUnit_Runner
              */
             if (!String.IsNullOrEmpty(Variant))
             {
-                try
+                if (Utilities.CompareVersionStrings("3.1.4024.0", vsInstance.GetLoadedTcVersion()))
                 {
-                    automationInterface.ITcSysManager.CurrentProjectVariant = Variant;
-                    log.Info("Variant selected with name: " + Variant);
+                    try
+                    {
+                        //Using newer version of ITcSysManager to be able to set variant
+                        ITcSysManager14 sysManager = (ITcSysManager14)vsInstance.GetProject().Object;
+                        sysManager.CurrentProjectVariant = Variant;
+                        log.Info("Variant selected with name: " + Variant);
+                    }
+                    catch
+                    {
+                        log.Error("Unable to set variant: " + Variant + ". Please provide an existing variant from the project.");
+                        CleanUpAndExitApplication(Constants.RETURN_FAILED_TO_SET_VARIANT);
+                    }
                 }
-                catch
+                else
                 {
-                    log.Error("Unable to set variant: " + Variant + ". Please provide an existing variant from the project.");
-                    CleanUpAndExitApplication(Constants.RETURN_INVALID_VARIANT);
+                    log.Error("Variants are only supported from Tc3.1.4024.0 or higher.");
+                    CleanUpAndExitApplication(Constants.RETURN_FAILED_TO_SET_VARIANT);
                 }
             }
 

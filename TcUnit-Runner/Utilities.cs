@@ -120,5 +120,17 @@ namespace TcUnit.TcUnit_Runner
 
             return String.Empty;
         }
+
+        /// <summary>
+        /// Compare two version strings to see if Version >= baseVersion
+        /// </summary>
+        /// <returns>True if Version >= baseVersion</returns>
+        public static bool CompareVersionStrings(string baseVersion, string Version)
+        {
+            var vBase = new Version(baseVersion);
+            var vComp = new Version(Version);
+
+            return vBase.CompareTo(vComp) <= 0;
+        }
     }
 }

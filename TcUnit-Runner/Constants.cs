@@ -27,7 +27,7 @@ namespace TcUnit.TcUnit_Runner
         public const int RETURN_TASK_COUNT_NOT_EQUAL_TO_ONE = 16;
         public const int RETURN_TIMEOUT = 17;
         public const int RETURN_INVALID_ADSSTATE = 18;
-        public const int RETURN_INVALID_VARIANT = 19;
+        public const int RETURN_FAILED_TO_SET_VARIANT = 19;
 
         public const string XUNIT_RESULT_FILE_NAME = "TcUnit_xUnit_results.xml";
         public const string RT_CONFIG_ROUTE_SETTINGS_SHORTCUT = "TIRR"; // Shortcut for "Real-Time Configuration^Route Settings"
