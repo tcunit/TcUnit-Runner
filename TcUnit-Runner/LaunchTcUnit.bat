@@ -14,8 +14,9 @@ rem -t [OPTIONAL] The name of the task running TcUnit defined under "Tasks".
 rem    If this is not provided, it's assumed that only one task exists in the TwinCAT project.
 rem -a [OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run.
 rem    If this is not provided, the local AMS NetId is assumed (127.0.0.1.1.1)
-rem -w [OPTIONAL] The version of TwinCAT to be used. If this is not provided, the latest TwinCAT version
-rem	              will be used
+rem -w [OPTIONAL] The version of TwinCAT to be used. If this is not provided, then the following rules apply:
+rem    - If TwinCAT project is pinned, go with this version, otherwise...
+rem    - Go with latest installed version of TwinCAT
 rem -u [OPTIONAL] Timeout the process with an error after X minutes. If no timeout is provided,
 rem               the process might run indefinitely in case of error
 SET TCUNIT_TASK_NAME=
