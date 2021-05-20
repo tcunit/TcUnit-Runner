@@ -30,6 +30,7 @@ namespace TcUnit.TcUnit_Runner
         private string @filePath = null;
         private string vsVersion = null;
         private string tcVersion = null;
+        private string tcVersionLoaded = null;
         private string forceToThisTwinCatVersion = null;
         private EnvDTE80.DTE2 dte = null;
         private Type type = null;
@@ -198,7 +199,8 @@ namespace TcUnit.TcUnit_Runner
                throw new Exception("Wrong configuration for this TwinCAT version");
             }
 
-            // Log the Version which will be loaded
+            // Log and save the Version which will be loaded
+            tcVersionLoaded = remoteManager.Version;
             log.Info("Using the TwinCAT remote manager to load TwinCAT version '" + remoteManager.Version + "'...");
         }
 
@@ -384,6 +386,11 @@ namespace TcUnit.TcUnit_Runner
         public string GetVisualStudioVersion()
         {
             return this.vsVersion;
+        }
+
+        public string GetLoadedTcVersion()
+        {
+            return tcVersionLoaded;
         }
 
         public EnvDTE.Project GetProject()
