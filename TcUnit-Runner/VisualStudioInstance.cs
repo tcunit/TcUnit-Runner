@@ -34,6 +34,7 @@ namespace TcUnit.TcUnit_Runner
         private EnvDTE80.DTE2 dte = null;
         private Type type = null;
         private EnvDTE.Solution visualStudioSolution = null;
+        private EnvDTE.SolutionBuild solutionBuild = null;
         EnvDTE.Project pro = null;
         ILog log = LogManager.GetLogger("TcUnit-Runner");
         private bool loaded = false;
@@ -372,6 +373,7 @@ namespace TcUnit.TcUnit_Runner
         private void LoadSolution(string filePath)
         {
             visualStudioSolution = dte.Solution;
+            solutionBuild = dte.Solution.SolutionBuild;
             visualStudioSolution.Open(@filePath);
         }
 
@@ -398,13 +400,15 @@ namespace TcUnit.TcUnit_Runner
 
         public void CleanSolution()
         {
-            visualStudioSolution.SolutionBuild.Clean(true);
+            Thread.Sleep(1000);
+            solutionBuild.Clean(true);
         }
 
         public void BuildSolution()
         {
-            visualStudioSolution.SolutionBuild.Build(false);
-            SpinWait.SpinUntil(() => visualStudioSolution.SolutionBuild.BuildState == EnvDTE.vsBuildState.vsBuildStateDone);
+            Thread.Sleep(1000);
+            solutionBuild.Build(false);
+            SpinWait.SpinUntil(() => solutionBuild.BuildState == EnvDTE.vsBuildState.vsBuildStateDone);
         }
 
         public ErrorItems GetErrorItems()
