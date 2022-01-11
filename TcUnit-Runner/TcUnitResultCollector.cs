@@ -195,7 +195,7 @@ namespace TcUnit.TcUnit_Runner
                                 {
                                     // Handle error
                                 }
-                                string durationString = tcUnitAdsMessage.Substring(tcUnitAdsMessage.LastIndexOf(", duration=") + 25);
+                                string durationString = tcUnitAdsMessage.Substring(tcUnitAdsMessage.LastIndexOf(", duration=") + 11);
                                 if (!double.TryParse(durationString, out testSuiteDuration))
                                 {
                                     // Handle error
@@ -277,7 +277,7 @@ namespace TcUnit.TcUnit_Runner
                             if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_DURATION)
                             {
                                 // Parse test class name
-                                string testDuration = tcUnitAdsMessage.Substring(tcUnitAdsMessage.LastIndexOf("Test duration=") + 16);
+                                string testDuration = tcUnitAdsMessage.Substring(tcUnitAdsMessage.LastIndexOf("Test duration=") + 14);
                                 if (!double.TryParse(testDuration, out testSuiteTestCaseDuration))
                                 {
                                     // Handle error
