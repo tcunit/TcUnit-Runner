@@ -359,5 +359,7 @@ MigrationBackup/
 .ionide/
 
 # Fody - auto-generated XML schema
-FodyWeavers.xsd.vscode
+FodyWeavers.xsd
+
+# VS Code - auto generated folder, remove if we want this
 .vscode/
