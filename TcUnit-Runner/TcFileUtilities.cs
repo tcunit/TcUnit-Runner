@@ -54,34 +54,52 @@ namespace TcUnit.TcUnit_Runner
         /// <returns>The path to the TwinCAT project file. Empty if not found.</returns>
         public static string FindTwinCATProjectFile(string VisualStudioSolutionFilePath)
         {
-            /* Find Visual Studio version */
+            var VisualStudioSolutionAbsFilePath = Path.Combine(Directory.GetCurrentDirectory(), VisualStudioSolutionFilePath);
+            log.Debug($"Looking for TwinCAT project in {VisualStudioSolutionAbsFilePath} ...");
+
+            var VisualStudioSolutionDirectoryPath = Path.GetDirectoryName(VisualStudioSolutionAbsFilePath);
+
+            /* Find first .tsproj in .sln file*/
             string line;
             string tcProjectFilePath = "";
             string tcProjectFile = "";
 
-            System.IO.StreamReader file = new System.IO.StreamReader(@VisualStudioSolutionFilePath);
+            StreamReader file = new StreamReader(@VisualStudioSolutionFilePath);
             while ((line = file.ReadLine()) != null)
             {
                 if (line.StartsWith("Project"))
                 {
                     tcProjectFile = Utilities.GetUntilOrEmpty(line, ".tsproj");
+                    tcProjectFile = tcProjectFile.Split(',').ElementAtOrDefault(1) ?? tcProjectFile; // get middle part
+                    tcProjectFile = tcProjectFile.Trim('"', ' ');
                     break;
                 }
             }
             file.Close();
 
-            if (!String.IsNullOrEmpty(tcProjectFile))
+            if (!string.IsNullOrEmpty(tcProjectFile))
             {
-                int indexOfTcProjectFile = tcProjectFile.LastIndexOf("\"") + 1;
-                try { 
-                    tcProjectFile = tcProjectFile.Substring(indexOfTcProjectFile, (tcProjectFile.Length- indexOfTcProjectFile));
+                tcProjectFilePath = VisualStudioSolutionDirectoryPath + "\\" + tcProjectFile + ".tsproj";
+                log.Debug($"Found canddidate: {tcProjectFilePath}");
 
-                    // Add visual studio solution directory path
-                    string VisualStudioSolutionDirectoryPath = Path.GetDirectoryName(VisualStudioSolutionFilePath);
-                    tcProjectFilePath = VisualStudioSolutionDirectoryPath + "\\" + tcProjectFile + ".tsproj";
-                } catch
+                if (File.Exists(tcProjectFilePath))
                 {
+                    log.Debug($"Found file directly: {tcProjectFilePath}");
+                }
+                else { // strip paths 
+                    log.Debug($"Stripping dirs from: {tcProjectFilePath}");
+                    int indexOfTcProjectFile = tcProjectFile.LastIndexOf("\"") + 1;
+                    try
+                    {
+                        tcProjectFile = tcProjectFile.Substring(indexOfTcProjectFile, (tcProjectFile.Length - indexOfTcProjectFile));
 
+                        // Add visual studio solution directory path
+                        tcProjectFilePath = VisualStudioSolutionDirectoryPath + "\\" + tcProjectFile + ".tsproj";
+                    }
+                    catch (Exception e)
+                    {
+                        log.Warn("Failed to strip paths", e);
+                    }
                 }
             }
             return tcProjectFilePath;
