@@ -40,7 +40,7 @@ namespace TcUnit.TcUnit_Runner
 
         public VisualStudioInstance(string @visualStudioSolutionFilePath, string twinCatVersion, string forceToThisTwinCatVersion)
         {
-            this.filePath = visualStudioSolutionFilePath;
+            this.filePath = Path.GetFullPath(visualStudioSolutionFilePath);
             string visualStudioVersion = VisualStudioTools.FindVisualStudioVersion(@filePath);
             this.vsVersion = visualStudioVersion;
             this.tcVersion = twinCatVersion;
@@ -90,6 +90,7 @@ namespace TcUnit.TcUnit_Runner
         {
             if (!String.IsNullOrEmpty(@filePath))
             {
+                log.Info("Loading: " + @filePath);
                 LoadSolution(@filePath);
                 LoadProject();
                 loaded = true;
@@ -233,12 +234,14 @@ namespace TcUnit.TcUnit_Runner
                 return VisualStudioProgId;
             } else
             {
-                List<string> VisualStudioProgIds = new List<string>();
-                VisualStudioProgIds.Add("VisualStudio.DTE.16.0"); // VS2019
-                VisualStudioProgIds.Add("TcXaeShell.DTE.15.0"); // TcXaeShell (VS2017)
-                VisualStudioProgIds.Add("VisualStudio.DTE.15.0"); // VS2017
-                VisualStudioProgIds.Add("VisualStudio.DTE.14.0"); // VS2015
-                VisualStudioProgIds.Add("VisualStudio.DTE.12.0"); // VS2013
+                List<string> VisualStudioProgIds = new List<string>
+                {
+                    "TcXaeShell.DTE.15.0", // TcXaeShell (VS2017)
+                    "VisualStudio.DTE.16.0", // VS2019
+                    "VisualStudio.DTE.15.0", // VS2017
+                    "VisualStudio.DTE.14.0", // VS2015
+                    "VisualStudio.DTE.12.0" // VS2013
+                };
 
                 foreach (string visualStudioProgIdent in VisualStudioProgIds)
                 {
@@ -268,9 +271,9 @@ namespace TcUnit.TcUnit_Runner
                 dte = (EnvDTE80.DTE2)System.Activator.CreateInstance(type);
                 log.Info("...SUCCESSFUL!");
                 return true;
-            } catch
+            } catch (Exception e)
             {
-                log.Info("...FAILED!");
+                log.Info($"...FAILED! ({e.Message})");
                 return false;
             }
         }

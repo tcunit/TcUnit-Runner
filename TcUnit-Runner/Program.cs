@@ -151,9 +151,9 @@ namespace TcUnit.TcUnit_Runner
             {
                 vsInstance.LoadSolution();
             }
-            catch
+            catch (Exception e)
             {
-                log.Error("ERROR: Error loading the solution. Try to open it manually and make sure it's possible to open and that all dependencies are working");
+                log.Error("ERROR: Error loading the solution. Try to open it manually and make sure it's possible to open and that all dependencies are working.\n" + e.ToString());
                 CleanUpAndExitApplication(Constants.RETURN_ERROR_LOADING_VISUAL_STUDIO_SOLUTION);
             }
 
