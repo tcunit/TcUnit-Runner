@@ -64,6 +64,7 @@ namespace TcUnit.TcUnit_Runner
             {
                 if (line.StartsWith("Project"))
                 {
+                    if (line.Contains(".tspproj")) continue;
                     tcProjectFile = Utilities.GetUntilOrEmpty(line, ".tsproj");
                     break;
                 }
