@@ -385,9 +385,10 @@ namespace TcUnit.TcUnit_Runner
 
                 errorItems = vsInstance.GetErrorItems();
 
-                var newErrors = errorList.AddNew(errorItems);
                 if (log.IsDebugEnabled)
                 {
+                    var newErrors = errorList.AddNew(errorItems);
+
                     foreach (var error in newErrors)
                     {
                         log.Debug(error.ErrorLevel + ": " + error.Description);
@@ -402,6 +403,7 @@ namespace TcUnit.TcUnit_Runner
                      * and fetch again
                     */
                     System.Threading.Thread.Sleep(10000);
+                    errorList.AddNew(errorItems);
                     break;
                 }
 
