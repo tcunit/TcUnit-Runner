@@ -7,7 +7,7 @@ rem Instructions:
 rem Set the below variable TCUNIT_RUNNER_INSTALL_DIRECTORY to where TcUnit-Runner was
 rem installed. This should normally be left at default and not changed
 rem (default C:\Program Files (x86)\TcUnit-Runner)
-SET TCUNIT_RUNNER_INSTALL_DIRECTORY=C:\Users\JEB\Source\Repos\TcUnit-Runner\TcUnit-Runner
+SET TCUNIT_RUNNER_INSTALL_DIRECTORY=C:\Users\JEB\Source\Repos\TcUnit-Runner_Bulkje\TcUnit-Runner\bin\Debug
 
 rem The parameters that can be supplied are:
 rem -t [OPTIONAL] The name of the task running TcUnit defined under "Tasks".
