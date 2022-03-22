@@ -55,6 +55,11 @@ namespace TcUnit.TcUnit_Runner
         [STAThread]
         static void Main(string[] args)
         {
+            //Thread.CurrentThread.Priority = ThreadPriority.Highest;
+            //System.Diagnostics.Process current = System.Diagnostics.Process.GetCurrentProcess();
+            //current.PriorityClass = System.Diagnostics.ProcessPriorityClass.AboveNormal;
+
+
             bool showHelp = false;
             bool enableDebugLoggingLevel = false;
             Console.CancelKeyPress += new ConsoleCancelEventHandler(CancelKeyPressHandler);
@@ -273,8 +278,14 @@ namespace TcUnit.TcUnit_Runner
             /* Build the solution and collect any eventual errors. Make sure to
              * filter out everything that is an error
              */
+            log.Info("Hier");
+            System.Threading.Thread.Sleep(100);
+            log.Info("Sleep");
             vsInstance.CleanSolution();
+            log.Info("Cleaned");
             vsInstance.BuildSolution();
+            log.Info("Built");
+            System.Threading.Thread.Sleep(100);
 
             ErrorItems errorsBuild = vsInstance.GetErrorItems();
 
@@ -323,18 +334,24 @@ namespace TcUnit.TcUnit_Runner
                     AmsPorts.Add(XmlUtilities.AmsPort(xmlString));
                 }
                 System.Threading.Thread.Sleep(1000);
+                log.Info("ActivateConfiguration");
+                //log.Info(automationInterface.ActivateConfiguration());
                 automationInterface.ActivateConfiguration();
+                //automationInterface.ITcSysManager.ActivateConfiguration();
+                log.Info("Done activating");
 
                 // Wait
                 System.Threading.Thread.Sleep(10000);
 
                 /* Clean the solution. This is the only way to clean the error list which needs to be
                  * clean prior to starting the TwinCAT runtime */
+                log.Info("Cleaning...");
                 vsInstance.CleanSolution();
+                log.Info("Cleaned again");
 
                 // Wait
                 System.Threading.Thread.Sleep(10000);
-
+                log.Info("StartRestartTwinCAT");
                 automationInterface.StartRestartTwinCAT();
             }
             else
@@ -436,7 +453,6 @@ namespace TcUnit.TcUnit_Runner
                 CleanUpAndExitApplication(Constants.RETURN_SUCCESSFULL);
             else
                 CleanUpAndExitApplication(Constants.RETURN_TESTS_FAILED);
-
         }
 
         static void DisplayHelp(OptionSet p)

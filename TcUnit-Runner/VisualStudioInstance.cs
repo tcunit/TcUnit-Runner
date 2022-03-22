@@ -10,6 +10,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 using TCatSysManagerLib;
 
@@ -400,15 +401,15 @@ namespace TcUnit.TcUnit_Runner
 
         public void CleanSolution()
         {
-            Thread.Sleep(1000);
+            //Thread.Sleep(1000);
             solutionBuild.Clean(true);
         }
 
         public void BuildSolution()
         {
-            Thread.Sleep(1000);
-            solutionBuild.Build(false);
-            SpinWait.SpinUntil(() => solutionBuild.BuildState == EnvDTE.vsBuildState.vsBuildStateDone);
+            //Thread.Sleep(1000);
+            solutionBuild.Build(true);
+            //SpinWait.SpinUntil(() => solutionBuild.BuildState == EnvDTE.vsBuildState.vsBuildStateDone);
         }
 
         public ErrorItems GetErrorItems()

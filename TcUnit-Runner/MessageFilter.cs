@@ -30,6 +30,7 @@ namespace TcUnit.TcUnit_Runner {
         int IOleMessageFilter.HandleInComingCall(int dwCallType,
           System.IntPtr hTaskCaller, int dwTickCount, System.IntPtr
           lpInterfaceInfo) {
+            Console.WriteLine("SERVERCALL_ISHANDLED");
             //Return the flag SERVERCALL_ISHANDLED.
             return 0;
         }
@@ -40,17 +41,21 @@ namespace TcUnit.TcUnit_Runner {
             if (dwRejectType == 2)
             // flag = SERVERCALL_RETRYLATER.
             {
+
                 // Retry the thread call immediately if return >=0 & 
                 // <100.
+                Console.WriteLine("SERVERCALL_RETRYLATER");
                 return 99;
             }
             // Too busy; cancel call.
+            Console.WriteLine("Too busy");
             return -1;
         }
 
         int IOleMessageFilter.MessagePending(System.IntPtr hTaskCallee,
           int dwTickCount, int dwPendingType) {
             //Return the flag PENDINGMSG_WAITDEFPROCESS.
+            Console.WriteLine("PENDINGMSG_WAITDEFPROCESS");
             return 2;
         }
 
