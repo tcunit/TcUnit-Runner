@@ -123,12 +123,13 @@
     <Content Include="LICENSE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="LaunchTcUnit.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Beckhoff.TwinCAT.Ads_LICENSE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="LaunchTcUnit.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="LaunchTcUnit.ps1" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
