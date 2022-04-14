@@ -1,4 +1,5 @@
 ﻿using EnvDTE80;
+using EnvDTE;
 using log4net;
 using System;
 using System.Collections;
@@ -106,7 +107,7 @@ namespace TcUnit.TcUnit_Runner
         {
             if (loaded) {
                 log.Info("Closing the Visual Studio Development Tools Environment (DTE)...");
-                Thread.Sleep(5000); // Avoid 'Application is busy'-problem (RPC_E_CALL_REJECTED 0x80010001 or RPC_E_SERVERCALL_RETRYLATER 0x8001010A)
+                System.Threading.Thread.Sleep(5000); // Avoid 'Application is busy'-problem (RPC_E_CALL_REJECTED 0x80010001 or RPC_E_SERVERCALL_RETRYLATER 0x8001010A)
                 dte.Quit();
             }
             loaded = false;
@@ -129,11 +130,11 @@ namespace TcUnit.TcUnit_Runner
             dte.ToolWindows.ErrorList.ShowMessages = true;
             dte.ToolWindows.ErrorList.ShowWarnings = true;
             // First set the SilentMode and then try to open the Remote Manager
-            var tcAutomationSettings = dte.GetObject("TcAutomationSettings");
+            var tcAutomationSettings = (TcAutomationSettings)dte.GetObject("TcAutomationSettings");
             tcAutomationSettings.SilentMode = true; // Only available from TC3.1.4020.0 and above
 
             // Load the correct version of TwinCAT using the remote manager in the automation interface
-            ITcRemoteManager remoteManager = dte.GetObject("TcRemoteManager");
+            ITcRemoteManager remoteManager = (ITcRemoteManager)dte.GetObject("TcRemoteManager");
 
             var allTwinCatVersions = new List<Version>();
             Version latestTwinCatVersion = null;
@@ -239,7 +240,8 @@ namespace TcUnit.TcUnit_Runner
             if (TryLoadDte(VisualStudioProgId))
             {
                 return VisualStudioProgId;
-            } else
+            }
+            else
             {
                 List<string> VisualStudioProgIds = new List<string>();
                 VisualStudioProgIds.Add("VisualStudio.DTE.16.0"); // VS2019
@@ -273,7 +275,7 @@ namespace TcUnit.TcUnit_Runner
             type = System.Type.GetTypeFromProgID(visualStudioProgIdentity);
             try
             {
-                dte = (EnvDTE80.DTE2)System.Activator.CreateInstance(type);
+                dte = (DTE2)System.Activator.CreateInstance(type);
                 log.Info("...SUCCESSFUL!");
                 return true;
             } catch
@@ -402,13 +404,13 @@ namespace TcUnit.TcUnit_Runner
 
         public void CleanSolution()
         {
-            Thread.Sleep(1000);
+            System.Threading.Thread.Sleep(1000);
             solutionBuild.Clean(true);
         }
 
         public void BuildSolution()
         {
-            Thread.Sleep(1000);
+            System.Threading.Thread.Sleep(1000);
             solutionBuild.Build(false);
             SpinWait.SpinUntil(() => solutionBuild.BuildState == EnvDTE.vsBuildState.vsBuildStateDone);
         }

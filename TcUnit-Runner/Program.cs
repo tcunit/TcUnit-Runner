@@ -37,6 +37,7 @@ using System.Reflection;
 using System.Xml;
 using TCatSysManagerLib;
 using TwinCAT.Ads;
+using TwinCAT;
 
 namespace TcUnit.TcUnit_Runner
 {
@@ -176,6 +177,7 @@ namespace TcUnit.TcUnit_Runner
             }
             catch
             {
+
                 log.Error("Error loading VS DTE. Is the correct version of Visual Studio and TwinCAT installed? Is the TcUnit-Runner running with administrator privileges?");
                 CleanUpAndExitApplication(Constants.RETURN_ERROR_LOADING_VISUAL_STUDIO_DTE);
             }
@@ -362,7 +364,7 @@ namespace TcUnit.TcUnit_Runner
 
             /* Establish a connection to the ADS router
              */
-            TcAdsClient tcAdsClient = new TcAdsClient();
+            AdsClient tcAdsClient = new AdsClient();
 
             /* Run TcUnit until the results have been returned */
             TcUnitResultCollector tcUnitResultCollector = new TcUnitResultCollector();
