@@ -77,6 +77,7 @@ namespace TcUnit.TcUnit_Runner
             {
                 // log.Info("... none existing Visual Studio process found. Creating new instance of visual studio DTE.");
                 // If existing process doesn't exist, load a new DTE process
+                log.Info("Launching new DTE");
                 LoadDevelopmentToolsEnvironment(vsVersion, isTcVersionPinned);
             }
             else
