@@ -430,6 +430,15 @@ namespace TcUnit.TcUnit_Runner
 
             List<ErrorList.Error> errors = new List<ErrorList.Error>(errorList.Where(e => (e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelHigh || e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelLow)));
             List<ErrorList.Error> errorsSorted = errors.OrderBy(o => o.Description).ToList();
+            for (int i = 1; i <= automationInterface.PlcTreeItem.ChildCount; i++)
+            {
+                ITcSmTreeItem plcProj = automationInterface.PlcTreeItem.Child[i];
+                ITcPlcProject iecProj = (ITcPlcProject)plcProj;
+                iecProj.BootProjectAutostart = false;
+            }
+            tcAdsClient.Connect(AmsNetId, AmsPorts[0]);
+            automationInterface.StartRestartTwinCAT();
+            tcAdsClient.Disconnect();
 
             /* Parse all events (from the error list) from Visual Studio and store the results */
             TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errorsSorted, TcUnitTaskName);
