@@ -14,21 +14,17 @@ rem -t [OPTIONAL] The name of the task running TcUnit defined under "Tasks".
 rem    If this is not provided, it's assumed that only one task exists in the TwinCAT project.
 rem -a [OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run.
 rem    If this is not provided, the local AMS NetId is assumed (127.0.0.1.1.1)
-rem -w [OPTIONAL] The version of TwinCAT to be used. If this is not provided, the latest TwinCAT version
-rem	              will be used
+rem -w [OPTIONAL] The version of TwinCAT to be used. If this is not provided, then the following rules apply:
+rem    - If TwinCAT project is pinned, go with this version, otherwise...
+rem    - Go with latest installed version of TwinCAT
 rem -u [OPTIONAL] Timeout the process with an error after X minutes. If no timeout is provided,
 rem               the process might run indefinitely in case of error
-rem -x [OPTIONAL] Disable the TcXAE shell environment, in case of
-rem               VisualStudio.15.0 and TcXAEShell.15.0 are installed.
-rem -x [OPTIONAL] Disable the TcXAE shell environment, in case of
-rem               VisualStudio.15.0 and TcXAEShell.15.0 are installed.
 SET TCUNIT_TASK_NAME=
 SET TCUNIT_AMSNETID=
 SET TCUNIT_TCVERSION_TO_USE=
 SET TCUNIT_TIMEOUT=
-SET TCXAE_SHELL=
 
-CALL :Process_Parameters %1, %2, %3, %4, %5, %6, %7, %8, %9
+CALL :Process_Parameters %1, %2, %3, %4, %5, %6, %7, %8
 
 rem Create parameter call to TcUnit-Runner
 SET TCUNIT_RUNNER_PARAMETERS=
@@ -43,9 +39,6 @@ IF DEFINED TCUNIT_TCVERSION_TO_USE (
 )
 IF DEFINED TCUNIT_TIMEOUT (
     SET TCUNIT_RUNNER_PARAMETERS=%TCUNIT_RUNNER_PARAMETERS% --Timeout=%TCUNIT_TIMEOUT%
-)
-IF DEFINED TCXAE_SHELL (
-    SET TCUNIT_RUNNER_PARAMETERS=%TCUNIT_RUNNER_PARAMETERS% --DisableTcXAEShell=%TCXAE_SHELL%
 )
 
 SET TCUNIT_RUNNER_EXECUTABLE_COMPLETE_PATH=%TCUNIT_RUNNER_INSTALL_DIRECTORY%\TcUnit-Runner.exe
@@ -78,12 +71,6 @@ IF NOT DEFINED TCUNIT_TIMEOUT (
     echo Timeout not provided.
 ) ELSE (
     echo Timeout has been provided, using [min]: %TCUNIT_TIMEOUT%
-)
-
-IF NOT DEFINED TCXAE_SHELL (
-    echo TcXAEShell environment is allowed.
-) ELSE (
-    echo TcXAEShell has been disabled, using : %TCXAE_SHELL%
 )
 
 
@@ -137,12 +124,6 @@ IF "%~1" == "-u" (
 IF "%~1" == "-U" (
     SET TCUNIT_TIMEOUT=%2
 )
-IF "%~1" == "-x" (
-    SET TCXAE_SHELL=%2
-)
-IF "%~1" == "-X" (
-    SET TCXAE_SHELL=%2
-)
 
 rem Second parameter
 IF "%~3" == "-t" (
@@ -168,12 +149,6 @@ IF "%~3" == "-u" (
 )
 IF "%~3" == "-U" (
     SET TCUNIT_TIMEOUT=%4
-)
-IF "%~3" == "-x" (
-    SET TCXAE_SHELL=%4
-)
-IF "%~3" == "-X" (
-    SET TCXAE_SHELL=%4
 )
 
 rem Third parameter
@@ -201,12 +176,6 @@ IF "%~5" == "-u" (
 IF "%~5" == "-U" (
     SET TCUNIT_TIMEOUT=%6
 )
-IF "%~5" == "-x" (
-    SET TCXAE_SHELL=%6
-)
-IF "%~5" == "-X" (
-    SET TCXAE_SHELL=%6
-)
 
 rem Fourth parameter
 IF "%~7" == "-t" (
@@ -233,44 +202,7 @@ IF "%~7" == "-u" (
 IF "%~7" == "-U" (
     SET TCUNIT_TIMEOUT=%8
 )
-IF "%~7" == "-x" (
-    SET TCXAE_SHELL=%8
-)
-IF "%~7" == "-X" (
-    SET TCXAE_SHELL=%8
-)
 
-rem Fifth parameter
-IF "%~8" == "-t" (
-    SET TCUNIT_TASK_NAME=%9
-)
-IF "%~8" == "-T" (
-    SET TCUNIT_TASK_NAME=%9
-)
-IF "%~8" == "-a" (
-    SET TCUNIT_AMSNETID=%9
-)
-IF "%~8" == "-A" (
-    SET TCUNIT_AMSNETID=%9
-)
-IF "%~8" == "-w" (
-    SET TCUNIT_TCVERSION_TO_USE=%9
-)
-IF "%~8" == "-W" (
-    SET TCUNIT_TCVERSION_TO_USE=%9
-)
-IF "%~8" == "-u" (
-    SET TCUNIT_TIMEOUT=%9
-)
-IF "%~8" == "-U" (
-    SET TCUNIT_TIMEOUT=%9
-)
-IF "%~8" == "-x" (
-    SET TCXAE_SHELL=%9
-)
-IF "%~8" == "-X" (
-    SET TCXAE_SHELL=%9
-)
 
 GOTO:EOF
 
