@@ -38,6 +38,17 @@ namespace TcUnit.TcUnit_Runner
         EnvDTE.Project pro = null;
         ILog log = LogManager.GetLogger("TcUnit-Runner");
         private bool loaded = false;
+        private bool disableTcXAEShell = false;
+
+        public VisualStudioInstance(string @visualStudioSolutionFilePath, string twinCatVersion, string forceToThisTwinCatVersion, bool disableTcXAEShell)
+        {
+            this.filePath = visualStudioSolutionFilePath;
+            string visualStudioVersion = VisualStudioTools.FindVisualStudioVersion(@filePath);
+            this.vsVersion = visualStudioVersion;
+            this.tcVersion = twinCatVersion;
+            this.forceToThisTwinCatVersion = forceToThisTwinCatVersion;
+            this.disableTcXAEShell = disableTcXAEShell;
+        }
 
         public VisualStudioInstance(string @visualStudioSolutionFilePath, string twinCatVersion, string forceToThisTwinCatVersion)
         {
@@ -122,10 +133,12 @@ namespace TcUnit.TcUnit_Runner
             bool isForceVersionAvailable = false;
             dte.UserControl = false; // have devenv.exe automatically close when launched using automation
             dte.SuppressUI = true;
+
             // Make sure all types of errors in the error list are collected
             dte.ToolWindows.ErrorList.ShowErrors = true;
             dte.ToolWindows.ErrorList.ShowMessages = true;
             dte.ToolWindows.ErrorList.ShowWarnings = true;
+
             // First set the SilentMode and then try to open the Remote Manager
             var tcAutomationSettings = dte.GetObject("TcAutomationSettings");
             tcAutomationSettings.SilentMode = true; // Only available from TC3.1.4020.0 and above
@@ -152,9 +165,12 @@ namespace TcUnit.TcUnit_Runner
                     isForceVersionAvailable = true;
                     log.Info("The forced TwinCAT version is available");
                 }
+
+                log.Info("TcVersion available: " + possibleVersion);
             }
 
             // Find latest installed TwinCAT version
+
             latestTwinCatVersion = allTwinCatVersions.Max();
 
             // If the version is pinned, check if the pinned version is available
@@ -175,7 +191,7 @@ namespace TcUnit.TcUnit_Runner
              * - If TwinCAT project is pinned, go with this version, otherwise...
              * - Go with latest installed version of TwinCAT
              */
-            if (isTwinCatVersionPinned && isVersionAvailable && (String.IsNullOrEmpty(this.forceToThisTwinCatVersion)))
+            if (isTwinCatVersionPinned && isVersionAvailable && !isForceVersionAvailable && (String.IsNullOrEmpty(this.forceToThisTwinCatVersion)))
             {
                 remoteManager.Version = this.tcVersion;
             }
@@ -225,7 +241,12 @@ namespace TcUnit.TcUnit_Runner
             Version vsVersion = new Version(visualStudioVersion);
 
             // Check if the TcXaeShell is installed for everything equal or above version 15.0 (VS2017)
-            if (vsVersion >= vsVersion15)
+            if (this.disableTcXAEShell)
+            {
+                log.Info("The usage of TcXAEShell is disabled");
+            }
+
+            if (vsVersion >= vsVersion15 && !this.disableTcXAEShell)
             {
                 VisualStudioProgId = "TcXaeShell.DTE." + visualStudioVersion;
             }
@@ -269,6 +290,10 @@ namespace TcUnit.TcUnit_Runner
         {
             log.Info("Trying to load the Visual Studio Development Tools Environment (DTE) version '" + visualStudioProgIdentity + "' ...");
             type = System.Type.GetTypeFromProgID(visualStudioProgIdentity);
+            if (type == null)
+            {
+                log.Error("Unable to load type from " + visualStudioProgIdentity);
+            }
             try
             {
                 dte = (EnvDTE80.DTE2)System.Activator.CreateInstance(type);
