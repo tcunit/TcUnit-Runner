@@ -43,6 +43,7 @@ namespace TcUnit.TcUnit_Runner
     class Program
     {
         private static string VisualStudioSolutionFilePath = null;
+        private static bool DisableTcXAEShell = false;
         private static string TwinCATProjectFilePath = null;
         private static string TcUnitTaskName = null;
         private static string ForceToThisTwinCATVersion = null;
@@ -62,12 +63,13 @@ namespace TcUnit.TcUnit_Runner
             log4net.Config.XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(AppDomain.CurrentDomain.BaseDirectory + "log4net.config"));
 
             OptionSet options = new OptionSet()
-                .Add("v=|VisualStudioSolutionFilePath=", "The full path to the TwinCAT project (sln-file)", v => VisualStudioSolutionFilePath = v)
+                .Add("v=|VisualStudioSolutionFilePath=", "The full path to the TwinCAT project (sln-file)", v => VisualStudioSolutionFilePath = v)               
                 .Add("t=|TcUnitTaskName=", "[OPTIONAL] The name of the task running TcUnit defined under \"Tasks\"", t => TcUnitTaskName = t)
                 .Add("a=|AmsNetId=", "[OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run", a => AmsNetId = a)
                 .Add("w=|TcVersion=", "[OPTIONAL] The TwinCAT version to be used to load the TwinCAT project", w => ForceToThisTwinCATVersion = w)
                 .Add("u=|Timeout=", "[OPTIONAL] Timeout the process with an error after X minutes", u => Timeout = u)
                 .Add("d|debug", "[OPTIONAL] Increase debug message verbosity", d => enableDebugLoggingLevel = d != null)
+                .Add("x=|DisableTcXAEShell=", "[OPTIONAL] Do not use the TcXAE shell environment", x => DisableTcXAEShell = x != null)
                 .Add("?|h|help", h => showHelp = h != null);
             try
             {
@@ -164,7 +166,7 @@ namespace TcUnit.TcUnit_Runner
 
             try
             {
-                vsInstance = new VisualStudioInstance(@VisualStudioSolutionFilePath, tcVersion, ForceToThisTwinCATVersion);
+                vsInstance = new VisualStudioInstance(@VisualStudioSolutionFilePath, tcVersion, ForceToThisTwinCATVersion, DisableTcXAEShell);
                 bool isTcVersionPinned = XmlUtilities.IsTwinCATProjectPinned(TwinCATProjectFilePath);
                 log.Info("Version is pinned: " + isTcVersionPinned);
                 vsInstance.Load(isTcVersionPinned);
@@ -273,7 +275,10 @@ namespace TcUnit.TcUnit_Runner
             /* Build the solution and collect any eventual errors. Make sure to
              * filter out everything that is an error
              */
+            log.Info("Cleaning the solution");
             vsInstance.CleanSolution();
+
+            log.Info("Bulding the solution");
             vsInstance.BuildSolution();
 
             ErrorItems errorsBuild = vsInstance.GetErrorItems();
@@ -301,6 +306,8 @@ namespace TcUnit.TcUnit_Runner
              * start/restart TwinCAT */
             if (tcBuildError.Equals(0))
             {
+                log.Info("Build finished without any errors");
+
                 /* Check whether the user has provided an AMS NetId. If so, use it. Otherwise use
                  * the local AMS NetId */
                 if (String.IsNullOrEmpty(AmsNetId))
@@ -323,6 +330,8 @@ namespace TcUnit.TcUnit_Runner
                     AmsPorts.Add(XmlUtilities.AmsPort(xmlString));
                 }
                 System.Threading.Thread.Sleep(1000);
+
+                log.Info("Activate configuration");
                 automationInterface.ActivateConfiguration();
 
                 // Wait
@@ -330,11 +339,13 @@ namespace TcUnit.TcUnit_Runner
 
                 /* Clean the solution. This is the only way to clean the error list which needs to be
                  * clean prior to starting the TwinCAT runtime */
+                log.Info("Clean the solution prior to starting the TwinCAT runtime");
                 vsInstance.CleanSolution();
 
                 // Wait
                 System.Threading.Thread.Sleep(10000);
 
+                log.Info("Start the TwinCAT runtime");
                 automationInterface.StartRestartTwinCAT();
             }
             else
@@ -383,6 +394,7 @@ namespace TcUnit.TcUnit_Runner
                     tcAdsClient.Disconnect();
                 }
 
+                log.Info("Retrieves the error list");
                 errorItems = vsInstance.GetErrorItems();
 
                 var newErrors = errorList.AddNew(errorItems);
@@ -411,6 +423,7 @@ namespace TcUnit.TcUnit_Runner
             List<ErrorList.Error> errorsSorted = errors.OrderBy(o => o.Description).ToList();
 
             /* Parse all events (from the error list) from Visual Studio and store the results */
+            log.Info("Parse all events from Visual Studio and store the results");
             TcUnitTestResult testResult = tcUnitResultCollector.ParseResults(errorsSorted, TcUnitTaskName);
 
             /* Print results to logger */
