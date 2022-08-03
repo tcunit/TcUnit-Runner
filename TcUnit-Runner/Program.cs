@@ -278,6 +278,9 @@ namespace TcUnit.TcUnit_Runner
             log.Info("Cleaning the solution");
             vsInstance.CleanSolution();
 
+            log.Debug("Waiting ...");
+            System.Threading.Thread.Sleep(10000);
+
             log.Info("Bulding the solution");
             vsInstance.BuildSolution();
 
@@ -433,6 +436,7 @@ namespace TcUnit.TcUnit_Runner
             if (testResult == null)
             {
                 log.Error("No test results parsed from events (error list).");
+
                 CleanUpAndExitApplication(Constants.RETURN_ERROR_NO_TEST_RESULTS);
             }
 
@@ -492,6 +496,17 @@ namespace TcUnit.TcUnit_Runner
         {
             try
             {
+                log.Info("Cleaning the solution");
+                vsInstance.CleanSolution();
+            }
+            catch { }
+
+            log.Debug("Waiting ...");
+            System.Threading.Thread.Sleep(10000);
+
+            try 
+            { 
+                log.Info("Close solution");
                 vsInstance.Close();
             }
             catch { }
