@@ -423,7 +423,40 @@ namespace TcUnit.TcUnit_Runner
             }
 
             List<ErrorList.Error> errors = new List<ErrorList.Error>(errorList.Where(e => (e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelHigh || e.ErrorLevel == vsBuildErrorLevel.vsBuildErrorLevelLow)));
+            
+            /* Removing all 'No License Found!' error from the list */
+            List<ErrorList.Error> errorsLicenseNotFound = errors.FindAll(e => e.Description.Contains("No license found!"));
+            if (errorsLicenseNotFound != null)
+            {
+                int errorsRemoved = errors.RemoveAll(e => e.Description.Contains("No license found!"));
+                log.Info("Remove " + errorsRemoved + " errors, with 'No license Found!'");
+                foreach (var error in errorsLicenseNotFound)
+                {
+                    log.Debug(error.Description.ToString());
+                }
+            }         
+
+            /* Removing all 'TwinCAT System' error from the list */ 
+            List<ErrorList.Error> errorsTcSystem = errors.FindAll(e => e.Description.Contains("TwinCAT System"));
+            if (errorsTcSystem != null)
+            {
+                int errorsRemoved = errors.RemoveAll(e => e.Description.Contains("TwinCAT System"));
+                log.Info("Remove " + errorsRemoved + " errors, with 'TwinCAT System'");
+                foreach (var error in errorsTcSystem)
+                {
+                    log.Debug(error.Description.ToString());
+                }
+            }  
+            
             List<ErrorList.Error> errorsSorted = errors.OrderBy(o => o.Description).ToList();
+            if (errorsSorted != null)
+            {
+                log.Info("Errors sorted list: " + errorsSorted.Count + " errors founds");
+                foreach (var error in errorsSorted)
+                {
+                    log.Info(error.Description.ToString());
+                }
+            }
 
             /* Parse all events (from the error list) from Visual Studio and store the results */
             log.Info("Parse all events from Visual Studio and store the results");

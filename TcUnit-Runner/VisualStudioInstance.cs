@@ -432,8 +432,10 @@ namespace TcUnit.TcUnit_Runner
         public void BuildSolution()
         {
             Thread.Sleep(1000);
-            solutionBuild.Build(false);
-            SpinWait.SpinUntil(() => solutionBuild.BuildState == EnvDTE.vsBuildState.vsBuildStateDone);
+            //solutionBuild.Build(false);
+            //SpinWait.SpinUntil(() => solutionBuild.BuildState == EnvDTE.vsBuildState.vsBuildStateDone);
+
+            solutionBuild.Build(true);
         }
 
         public ErrorItems GetErrorItems()
