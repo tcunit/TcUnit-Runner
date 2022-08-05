@@ -429,19 +429,31 @@ namespace TcUnit.TcUnit_Runner
             if (errorsLicenseNotFound != null)
             {
                 int errorsRemoved = errors.RemoveAll(e => e.Description.Contains("No license found!"));
-                log.Info("Remove " + errorsRemoved + " errors, with 'No license Found!'");
+                log.Info("Removed " + errorsRemoved + " errors, with 'No license Found!'");
                 foreach (var error in errorsLicenseNotFound)
                 {
                     log.Debug(error.Description.ToString());
                 }
-            }         
+            }      
+
+            /* Removing all 'License Server' error from the list */
+            List<ErrorList.Error> errorsLicenseServer = errors.FindAll(e => e.Description.Contains("License Server"));
+            if (errorsLicenseServer != null)
+            {
+                int errorsRemoved = errors.RemoveAll(e => e.Description.Contains("License Server"));
+                log.Info("Removed " + errorsRemoved + " errors, with 'License Server'");
+                foreach (var error in errorsLicenseServer)
+                {
+                    log.Debug(error.Description.ToString());
+                }
+            }      
 
             /* Removing all 'TwinCAT System' error from the list */ 
             List<ErrorList.Error> errorsTcSystem = errors.FindAll(e => e.Description.Contains("TwinCAT System"));
             if (errorsTcSystem != null)
             {
                 int errorsRemoved = errors.RemoveAll(e => e.Description.Contains("TwinCAT System"));
-                log.Info("Remove " + errorsRemoved + " errors, with 'TwinCAT System'");
+                log.Info("Removed " + errorsRemoved + " errors, with 'TwinCAT System'");
                 foreach (var error in errorsTcSystem)
                 {
                     log.Debug(error.Description.ToString());
