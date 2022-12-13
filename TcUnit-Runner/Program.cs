@@ -42,6 +42,7 @@ namespace TcUnit.TcUnit_Runner
 {
     class Program
     {
+        private static string testResultDir = "";
         private static string VisualStudioSolutionFilePath = null;
         private static string TwinCATProjectFilePath = null;
         private static string TcUnitTaskName = null;
@@ -62,6 +63,7 @@ namespace TcUnit.TcUnit_Runner
             log4net.Config.XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(AppDomain.CurrentDomain.BaseDirectory + "log4net.config"));
 
             OptionSet options = new OptionSet()
+                .Add("r=|testResultsDir=", "[OPTIONAL] The relative path to store the test results. The path is relative to Visual Studio solution.", r => testResultDir = r)
                 .Add("v=|VisualStudioSolutionFilePath=", "The full path to the TwinCAT project (sln-file)", v => VisualStudioSolutionFilePath = v)
                 .Add("t=|TcUnitTaskName=", "[OPTIONAL] The name of the task running TcUnit defined under \"Tasks\"", t => TcUnitTaskName = t)
                 .Add("a=|AmsNetId=", "[OPTIONAL] The AMS NetId of the device of where the project and TcUnit should run", a => AmsNetId = a)
@@ -423,18 +425,29 @@ namespace TcUnit.TcUnit_Runner
                 CleanUpAndExitApplication(Constants.RETURN_ERROR_NO_TEST_RESULTS);
             }
 
-            // No need to check if file (VisualStudioSolutionFilePath) exists, as this has already been done
-            string VisualStudioSolutionDirectoryPath = Path.GetDirectoryName(VisualStudioSolutionFilePath);
-            string XUnitReportFilePath = VisualStudioSolutionDirectoryPath + "\\" + Constants.XUNIT_RESULT_FILE_NAME;
-            log.Info("Writing xUnit XML file to " + XUnitReportFilePath);
-            // Overwrites all existing content (if existing)
-            XunitXmlCreator.WriteXml(testResult, XUnitReportFilePath);
+            SaveTestResults(testResult);
 
             if (testResult.GetAllTestsPassed())
                 CleanUpAndExitApplication(Constants.RETURN_SUCCESSFULL);
             else
                 CleanUpAndExitApplication(Constants.RETURN_TESTS_FAILED);
 
+        }
+
+        private static void SaveTestResults(TcUnitTestResult testResult)
+        {
+            // No need to check if file (VisualStudioSolutionFilePath) exists, as this has already been done
+            string VisualStudioSolutionDirectoryPath = Path.GetDirectoryName(VisualStudioSolutionFilePath);
+            testResultDir = String.IsNullOrEmpty(testResultDir) ?
+                VisualStudioSolutionDirectoryPath : $"{VisualStudioSolutionDirectoryPath}\\{testResultDir}";
+            if (!Directory.Exists(testResultDir))
+            {
+                Directory.CreateDirectory(testResultDir);
+            }
+            string XUnitReportFilePath = Path.GetFullPath(testResultDir + "\\" + Constants.XUNIT_RESULT_FILE_NAME);
+            log.Info("Writing xUnit XML file to " + XUnitReportFilePath);
+            // Overwrites all existing content (if existing)
+            XunitXmlCreator.WriteXml(testResult, XUnitReportFilePath);
         }
 
         static void DisplayHelp(OptionSet p)
