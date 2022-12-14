@@ -438,8 +438,8 @@ namespace TcUnit.TcUnit_Runner
         {
             // No need to check if file (VisualStudioSolutionFilePath) exists, as this has already been done
             string VisualStudioSolutionDirectoryPath = Path.GetDirectoryName(VisualStudioSolutionFilePath);
-            testResultDir = String.IsNullOrEmpty(testResultDir) ?
-                VisualStudioSolutionDirectoryPath : $"{VisualStudioSolutionDirectoryPath}\\{testResultDir}";
+            testResultDir = Path.GetFullPath(VisualStudioSolutionDirectoryPath + "\\" + testResultDir);
+
             if (!Directory.Exists(testResultDir))
             {
                 Directory.CreateDirectory(testResultDir);
