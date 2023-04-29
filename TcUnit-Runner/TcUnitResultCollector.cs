@@ -2,6 +2,7 @@
 using log4net;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -278,7 +279,7 @@ namespace TcUnit.TcUnit_Runner
                             {
                                 // Parse test class name
                                 string testDuration = tcUnitAdsMessage.Substring(tcUnitAdsMessage.LastIndexOf("Test duration=") + 14);
-                                if (!double.TryParse(testDuration, out testSuiteTestCaseDuration))
+                                if (!double.TryParse(testDuration, NumberStyles.Any, CultureInfo.InvariantCulture, out testSuiteTestCaseDuration))
                                 {
                                     // Handle error
                                 }
