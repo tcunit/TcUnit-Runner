@@ -11,6 +11,7 @@ namespace TcUnit.TcUnit_Runner
         protected uint _numberOfTestCases;
         protected uint _numberOfSuccessfulTestCases;
         protected uint _numberOfFailedTestCases;
+        protected double _duration;
 
         /* Test results for each individiual test suite */
         protected List<TestSuiteResult> _testSuiteResults = new List<TestSuiteResult>();
@@ -73,11 +74,13 @@ namespace TcUnit.TcUnit_Runner
             public string FailureMessage;
             public string AssertType;
             public uint NumberOfAsserts;
+            public double TestDuration;
             public bool WasSuccessful;
-            public TestCaseResult(string testName, string testClassName, string testStatus, string failureMessage, string assertType, uint numberOfAsserts)
+            public TestCaseResult(string testName, string testClassName, string testStatus, string failureMessage, string assertType, uint numberOfAsserts, double duration)
             {
                 TestName = testName;
                 TestClassName = testClassName;
+                TestDuration = duration;
                 TestStatus = testStatus;
                 FailureMessage = failureMessage;
                 AssertType = assertType;
@@ -92,14 +95,16 @@ namespace TcUnit.TcUnit_Runner
             public uint Identity;
             public uint NumberOfTests;
             public uint NumberOfFailedTests;
+            public double Duration;
             public List<TestCaseResult> TestCaseResults;
 
-            public TestSuiteResult(string name, uint identity, uint numberOfTests, uint numberOfFailedTests)
+            public TestSuiteResult(string name, uint identity, uint numberOfTests, uint numberOfFailedTests, double duration)
             {
                 Name = name;
                 Identity = identity;
                 NumberOfTests = numberOfTests;
                 NumberOfFailedTests = numberOfFailedTests;
+                Duration = duration;
                 TestCaseResults = new List<TestCaseResult>();
             }
         }
@@ -109,12 +114,13 @@ namespace TcUnit.TcUnit_Runner
             _testSuiteResults.Add(testsuiteResult);
         }
 
-        public void AddGeneralTestResults(uint numberOfTestSuites, uint numberOfTestCases, uint numberOfSuccessfulTestCases, uint numberOfFailedTestCases)
+        public void AddGeneralTestResults(uint numberOfTestSuites, uint numberOfTestCases, uint numberOfSuccessfulTestCases, uint numberOfFailedTestCases, double duration)
         {
             _numberOfTestSuites = numberOfTestSuites;
             _numberOfTestCases = numberOfTestCases;
             _numberOfSuccessfulTestCases = numberOfSuccessfulTestCases;
             _numberOfFailedTestCases = numberOfFailedTestCases;
+            _duration = duration;
         }
 
         IEnumerator<TestSuiteResult> IEnumerable<TestSuiteResult>.GetEnumerator()
@@ -145,6 +151,10 @@ namespace TcUnit.TcUnit_Runner
         public uint GetNumberOfFailedTestCases()
         {
             return _numberOfFailedTestCases;
+        }
+        public double GetDuration()
+        {
+            return _duration;
         }
 
         public bool GetAllTestsPassed()

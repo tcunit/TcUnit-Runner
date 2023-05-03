@@ -2,6 +2,7 @@
 using log4net;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,9 +16,10 @@ namespace TcUnit.TcUnit_Runner
         private enum ErrorLogEntryType
         {
             TEST_SUITE_FINISHED_RUNNING = 0, // For example: | Test suite ID=1 'PRG_TEST.fbDiagnosticMessageFlagsParser_Test'		
-            TEST_SUITE_STATISTICS, // For example: | ID=1 number of tests=4, number of failed tests=1		
+            TEST_SUITE_STATISTICS, // For example: | ID=1 number of tests=4, number of failed tests=1, duration=0.1
             TEST_NAME, // For example: | Test name=WhenWarningMessageExpectWarningMessageLocalTimestampAndTwoParameters
             TEST_CLASS_NAME, // For example: | Test class name=PRG_TEST.fbDiagnosticMessageFlagsParser_Test
+            TEST_DURATION, // For example: | Test duration=0.010
             TEST_STATUS_AND_NUMBER_OF_ASSERTS, // For example: | Test status=SUCCESS, number of asserts=3
             TEST_ASSERT_MESSAGE, // For example: | Test assert message=Test 'Warning message' failed at 'diagnosis type'
             TEST_ASSERT_TYPE, // For example: | Test assert type=ANY
@@ -27,11 +29,12 @@ namespace TcUnit.TcUnit_Runner
         private int numberOfTests = -1;
         private int numberOfSuccessfulTests = -1;
         private int numberOfFailedTests = -1;
+        private double duration = 0.0;
         private const string tcUnitResult_TestSuites = "| Test suites:";
         private const string tcUnitResult_Tests = "| Tests:";
         private const string tcUnitResult_SuccessfulTests = "| Successful tests:";
         private const string tcUnitResult_FailedTests = "| Failed tests:";
-
+        private const string tcUnitResult_Duration = "| Duration:";
 
         public TcUnitResultCollector()
         { }
@@ -73,6 +76,11 @@ namespace TcUnit.TcUnit_Runner
                         string noFailedTests = line.Substring(line.LastIndexOf(tcUnitResult_FailedTests) + tcUnitResult_FailedTests.Length + 1);
                         Int32.TryParse(noFailedTests, out numberOfFailedTests);
                     }
+                    if (line.Contains(tcUnitResult_Duration))
+                    {
+                        string durationString = line.Substring(line.LastIndexOf(tcUnitResult_Duration) + tcUnitResult_Duration.Length + 1);
+                        double.TryParse(durationString, out duration);
+                    }
                 }
                 return AreTestResultsAvailable();
             }
@@ -97,7 +105,8 @@ namespace TcUnit.TcUnit_Runner
                 ErrorLogEntryType expectedErrorLogEntryType = ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING;
 
                 tcUnitTestResult.AddGeneralTestResults((uint)numberOfTestSuites, (uint)numberOfTests,
-                                                       (uint)numberOfSuccessfulTests, (uint)numberOfFailedTests);
+                                                       (uint)numberOfSuccessfulTests, (uint)numberOfFailedTests,
+                                                       duration);
 
                 // Temporary variables
                 uint currentTestIdentity = 0;
@@ -109,10 +118,12 @@ namespace TcUnit.TcUnit_Runner
                 uint testSuiteIdentity = 0;
                 uint testSuiteNumberOfTests = 0;
                 uint testSuiteNumberOfFailedTests = 0;
+                double testSuiteDuration = 0.0;
 
                 // Test case
                 string testSuiteTestCaseName = "";
                 string testSuiteTestCaseClassName = "";
+                double testSuiteTestCaseDuration = 0.0;
                 string testSuiteTestCaseStatus = "";
                 string testSuiteTestCaseFailureMessage = "";
                 string testSuiteTestCaseAssertType = "";
@@ -139,9 +150,11 @@ namespace TcUnit.TcUnit_Runner
                                 testSuiteIdentity = 0;
                                 testSuiteNumberOfTests = 0;
                                 testSuiteNumberOfFailedTests = 0;
+                                testSuiteDuration = 0.0;
 
                                 testSuiteTestCaseName = "";
                                 testSuiteTestCaseClassName = "";
+                                testSuiteTestCaseDuration = 0.0;
                                 testSuiteTestCaseStatus = "";
                                 testSuiteTestCaseFailureMessage = "";
                                 testSuiteTestCaseAssertType = "";
@@ -178,8 +191,13 @@ namespace TcUnit.TcUnit_Runner
                                 {
                                     // Handle error
                                 }
-                                string numberOfFailedTestsString = tcUnitAdsMessage.Substring(tcUnitAdsMessage.LastIndexOf(", number of failed tests=") + 25);
+                                string numberOfFailedTestsString = Utilities.GetStringBetween(tcUnitAdsMessage, ", number of failed tests=", ", duration=");
                                 if (!uint.TryParse(numberOfFailedTestsString, out testSuiteNumberOfFailedTests))
+                                {
+                                    // Handle error
+                                }
+                                string durationString = tcUnitAdsMessage.Substring(tcUnitAdsMessage.LastIndexOf(", duration=") + 11);
+                                if (!double.TryParse(durationString, out testSuiteDuration))
                                 {
                                     // Handle error
                                 }
@@ -191,7 +209,7 @@ namespace TcUnit.TcUnit_Runner
                                 if (testSuiteNumberOfTests.Equals(0))
                                 {
                                     // Store test suite & go to next test suite
-                                    TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult(testSuiteName, testSuiteIdentity, testSuiteNumberOfTests, testSuiteNumberOfFailedTests);
+                                    TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult(testSuiteName, testSuiteIdentity, testSuiteNumberOfTests, testSuiteNumberOfFailedTests, testSuiteDuration);
                                     tcUnitTestResult.AddNewTestSuiteResult(tsResult);
                                     expectedErrorLogEntryType = ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING;
                                 }
@@ -243,6 +261,28 @@ namespace TcUnit.TcUnit_Runner
                                 // Parse test class name
                                 string testClassName = tcUnitAdsMessage.Substring(tcUnitAdsMessage.LastIndexOf("Test class name=") + 16);
                                 testSuiteTestCaseClassName = testClassName;
+                                expectedErrorLogEntryType = ErrorLogEntryType.TEST_DURATION;
+                            }
+                            else
+                            {
+                                log.Error("While parsing TcUnit results, expected " + expectedErrorLogEntryType.ToString() + " but got " + ErrorLogEntryType.TEST_CLASS_NAME.ToString());
+                                return null;
+                            }
+                        }
+
+                        /* -------------------------------------
+                           Look for test duration
+                           ------------------------------------- */
+                        else if (tcUnitAdsMessage.Contains("Test duration="))
+                        {
+                            if (expectedErrorLogEntryType == ErrorLogEntryType.TEST_DURATION)
+                            {
+                                // Parse test class name
+                                string testDuration = tcUnitAdsMessage.Substring(tcUnitAdsMessage.LastIndexOf("Test duration=") + 14);
+                                if (!double.TryParse(testDuration, NumberStyles.Any, CultureInfo.InvariantCulture, out testSuiteTestCaseDuration))
+                                {
+                                    // Handle error
+                                }
                                 expectedErrorLogEntryType = ErrorLogEntryType.TEST_STATUS_AND_NUMBER_OF_ASSERTS;
                             }
                             else
@@ -276,7 +316,7 @@ namespace TcUnit.TcUnit_Runner
                                 else
                                 {
                                     // Store test case
-                                    TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult(testSuiteTestCaseName, testSuiteTestCaseClassName, testSuiteTestCaseStatus, "", "", testSuiteTestCaseNumberOfAsserts);
+                                    TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult(testSuiteTestCaseName, testSuiteTestCaseClassName, testSuiteTestCaseStatus, "", "", testSuiteTestCaseNumberOfAsserts, testSuiteTestCaseDuration);
 
                                     // Add test case result to test cases results
                                     testSuiteTestCaseResults.Add(tcResult);
@@ -288,7 +328,7 @@ namespace TcUnit.TcUnit_Runner
                                     else
                                     { // Last test case in this test suite
                                         // Create test suite result
-                                        TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult(testSuiteName, testSuiteIdentity, testSuiteNumberOfTests, testSuiteNumberOfFailedTests);
+                                        TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult(testSuiteName, testSuiteIdentity, testSuiteNumberOfTests, testSuiteNumberOfFailedTests, testSuiteDuration);
 
                                         // Add test case results to test suite
                                         foreach (TcUnitTestResult.TestCaseResult tcResultToBeStored in testSuiteTestCaseResults)
@@ -301,7 +341,6 @@ namespace TcUnit.TcUnit_Runner
                                         expectedErrorLogEntryType = ErrorLogEntryType.TEST_SUITE_FINISHED_RUNNING;
                                     }
                                 }
-
                             }
                             else
                             {
@@ -350,7 +389,7 @@ namespace TcUnit.TcUnit_Runner
                                 testSuiteTestCaseAssertType = testAssertType;
 
                                 // Store test case
-                                TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult(testSuiteTestCaseName, testSuiteTestCaseClassName, testSuiteTestCaseStatus, testSuiteTestCaseFailureMessage, testSuiteTestCaseAssertType, testSuiteTestCaseNumberOfAsserts);
+                                TcUnitTestResult.TestCaseResult tcResult = new TcUnitTestResult.TestCaseResult(testSuiteTestCaseName, testSuiteTestCaseClassName, testSuiteTestCaseStatus, testSuiteTestCaseFailureMessage, testSuiteTestCaseAssertType, testSuiteTestCaseNumberOfAsserts, testSuiteTestCaseDuration);
 
                                 // Add test case result to test cases results
                                 testSuiteTestCaseResults.Add(tcResult);
@@ -362,7 +401,7 @@ namespace TcUnit.TcUnit_Runner
                                 else
                                 { // Last test case in this test suite
                                     // Create test suite result
-                                    TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult(testSuiteName, testSuiteIdentity, testSuiteNumberOfTests, testSuiteNumberOfFailedTests);
+                                    TcUnitTestResult.TestSuiteResult tsResult = new TcUnitTestResult.TestSuiteResult(testSuiteName, testSuiteIdentity, testSuiteNumberOfTests, testSuiteNumberOfFailedTests, testSuiteTestCaseDuration);
 
                                     // Add test case results to test suite
                                     foreach (TcUnitTestResult.TestCaseResult tcResultToBeStored in testSuiteTestCaseResults)

@@ -34,6 +34,9 @@ namespace TcUnit.TcUnit_Runner
             XmlAttribute testSuitesAttributeTests = xmlDoc.CreateAttribute("tests");
             testSuitesAttributeTests.Value = testResults.GetNumberOfTestCases().ToString();
             testSuitesNode.Attributes.Append(testSuitesAttributeTests);
+            XmlAttribute testSuitesAttributeTime = xmlDoc.CreateAttribute("time");
+            testSuitesAttributeTime.Value = testResults.GetDuration().ToString(System.Globalization.CultureInfo.InvariantCulture);
+            testSuitesNode.Attributes.Append(testSuitesAttributeTests);
 
             foreach (TcUnitTestResult.TestSuiteResult tsResult in testResults)
             {
@@ -52,6 +55,9 @@ namespace TcUnit.TcUnit_Runner
                 XmlAttribute testSuiteAttributeFailures = xmlDoc.CreateAttribute("failures");
                 testSuiteAttributeFailures.Value = tsResult.NumberOfFailedTests.ToString();
                 testSuiteNode.Attributes.Append(testSuiteAttributeFailures);
+                XmlAttribute testSuiteAttributeTime = xmlDoc.CreateAttribute("time");
+                testSuiteAttributeTime.Value = tsResult.Duration.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                testSuiteNode.Attributes.Append(testSuiteAttributeTime);
 
                 // <testcase>
                 foreach (TcUnitTestResult.TestCaseResult tcResult in tsResult.TestCaseResults)
@@ -68,6 +74,9 @@ namespace TcUnit.TcUnit_Runner
                     XmlAttribute testCaseAttributeTestClassName = xmlDoc.CreateAttribute("classname");
                     testCaseAttributeTestClassName.Value = tcResult.TestClassName;
                     testCaseNode.Attributes.Append(testCaseAttributeTestClassName);
+                    XmlAttribute testCaseAttributeTestTime = xmlDoc.CreateAttribute("time");
+                    testCaseAttributeTestTime.Value = tcResult.TestDuration.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    testCaseNode.Attributes.Append(testCaseAttributeTestTime);
                     XmlAttribute testCaseAttributeStatus = xmlDoc.CreateAttribute("status");
                     testCaseAttributeStatus.Value = tcResult.TestStatus;
                     testCaseNode.Attributes.Append(testCaseAttributeStatus);
