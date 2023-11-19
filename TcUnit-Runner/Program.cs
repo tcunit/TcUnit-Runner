@@ -36,6 +36,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml;
 using TCatSysManagerLib;
+using TcUnit.TcUnit_Runner.PluginManager;
 using TwinCAT.Ads;
 
 namespace TcUnit.TcUnit_Runner
@@ -51,6 +52,8 @@ namespace TcUnit.TcUnit_Runner
         private static string Timeout = null;
         private static VisualStudioInstance vsInstance;
         private static ILog log = LogManager.GetLogger("TcUnit-Runner");
+
+        private static PluginLoader Plugins;
 
         [STAThread]
         static void Main(string[] args)
@@ -139,6 +142,11 @@ namespace TcUnit.TcUnit_Runner
                 timeout.Start();
             }
 
+            Plugins = new PluginLoader(log);
+            Plugins.LoadOptions(Path.Combine(Path.GetDirectoryName(VisualStudioSolutionFilePath), PluginManager.Constants.XML_PLUGINS_OPTIONS));
+            Plugins.Load();
+
+
             MessageFilter.Register();
 
             TwinCATProjectFilePath = TcFileUtilities.FindTwinCATProjectFile(VisualStudioSolutionFilePath);
@@ -191,6 +199,7 @@ namespace TcUnit.TcUnit_Runner
                 CleanUpAndExitApplication(Constants.RETURN_ERROR_FINDING_VISUAL_STUDIO_SOLUTION_VERSION);
             }
 
+            Plugins.RunAfterSolutionLoadedHooks(vsInstance.GetProject());
 
             AutomationInterface automationInterface = new AutomationInterface(vsInstance.GetProject());
             if (automationInterface.PlcTreeItem.ChildCount <= 0)
