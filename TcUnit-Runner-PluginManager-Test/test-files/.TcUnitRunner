@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<TcUnitRunner>
+	<Plugins directory="./plugins">
+		<Plugin name = "TestPlugin">
+			<TestNode>test-value</TestNode>
+		</Plugin>
+	</Plugins>
+</TcUnitRunner>
