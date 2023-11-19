@@ -1,0 +1,17 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.34114.132
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{DFBE7525-6864-4E62-8B2E-D530D69D9D96}") = "TwinCAT PLC1", "TwinCAT PLC1\TwinCAT PLC1.tspproj", "{7226783D-3BA6-4225-B25D-4FEF566BFED4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{547EB318-DAAA-4594-87EE-183564F54BBE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4F53F804-3E92-4465-BBD0-3D66918E60A3}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Project("{B1E792BE-AA5F-4E3C-8C82-674BF9C0715B}") = "TwinCAT Project", "TwinCAT Project.tsproj", "{2C8E40E8-5888-44D5-8C02-FF326A88CAF0}"
+EndProject
+Global
+EndGlobal
