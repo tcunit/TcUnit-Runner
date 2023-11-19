@@ -159,5 +159,11 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TcUnit-Runner-PluginManager\TcUnit-Runner-PluginManager.csproj">
+      <Project>{fec3d0d8-4291-42dc-92ed-3c9da5af55d0}</Project>
+      <Name>TcUnit-Runner-PluginManager</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
