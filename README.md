@@ -1,4 +1,9 @@
-# TcUnit-Runner - TcUnit integration into Jenkins
+# Archived
+
+**This project is currently archived.
+A replacement for it is in the works.**
+
+# TcUnit-Runner - Build & test pipeline integration
 Welcome to the documentation of TcUnit-Runner - the program that makes it possible to automate runs of TcUnit unit
 tests.
 
